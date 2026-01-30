@@ -24,51 +24,62 @@ export function GridDroppable({
   const remainingWidth = maxWidth - usedWidth;
 
   const style = {
-    backgroundColor: isOver ? "#e0f2fe" : "#f8fafc",
-    borderColor: isOver ? "#3b82f6" : "#cbd5e1",
-    width: `${maxWidth * 2 + 16}px`,
-    maxWidth: `${maxWidth * 2 + 16}px`,
+    backgroundColor: isOver ? "#ae8856ea" : "#ae8856",
+    borderColor: isOver ? "##997547" : "#ae8856",
+  };
+
+  const dropAreaStyle = {
+    backgroundColor: isOver ? "#4a4a4aa2" : "transparent",
+    borderColor: isOver ? "##997547" : "transparent",
+    padding: "0 8px",
+    height: "fit-content",
+    minHeight: "100px",
+    bottom: "-8px",
   };
 
   return (
-    <div className="flex flex-col gap-2 flex-1">
-      <h3 className="font-bold text-lg">{title}</h3>
+    <div className="flex flex-col gap-2 flex-1 min-w-0 w-full relative">
+      <h3 className="font-bold text-base md:text-lg">{title}</h3>
       <div
         ref={setNodeRef}
-        style={style}
-        className="border-2 rounded-lg p-4 min-h-[200px] transition-colors">
-        <div className="mb-2 text-sm text-gray-600">
-          Capacity: {usedWidth}/{maxWidth} units (
-          <span
-            className={
-              remainingWidth === 0 ? "text-red-600 font-bold" : "text-green-600"
-            }>
-            {remainingWidth} remaining
-          </span>
-          )
-        </div>
+        style={dropAreaStyle}
+        className="transition-colors relative flex h-full">
         <SortableContext
           items={items.map((item) => item.id)}
           strategy={rectSortingStrategy}>
           <div
-            className="grid gap-0"
+            className="grid gap-0 items-end relative"
             style={{
               gridTemplateColumns: `repeat(${maxWidth}, 1fr)`,
-              gridTemplateRows: "repeat(3, 40px)",
+              gridAutoRows: "auto",
+              minWidth: `${Math.min(maxWidth * 1.5, 300)}px`,
+              width: "100%",
             }}>
             {items.map((item) => (
               <div
                 key={item.id}
-                className="h-full mx-0.5"
+                className="mx-0.5 relative w-fit"
                 style={{
                   gridColumn: `span ${item.width}`,
-                  gridRow: `${4 - item.height} / 4`,
                 }}>
                 <SortableGridItem {...item} />
               </div>
             ))}
           </div>
         </SortableContext>
+      </div>
+      <div
+        style={style}
+        className="border-2 border-dashed border-t-0 rounded-lg p-2 sm:p-3 md:p-4 ] h-8 transition-colors w-full max-w-full overflow-x-auto overflow-y-visible z-50"></div>
+      <div className="mb-2 text-xs sm:text-sm text-gray-300">
+        Capacity: {usedWidth}/{maxWidth} units (
+        <span
+          className={
+            remainingWidth === 0 ? "text-red-600 font-bold" : "text-green-600"
+          }>
+          {remainingWidth} remaining
+        </span>
+        )
       </div>
     </div>
   );

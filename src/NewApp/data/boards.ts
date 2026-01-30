@@ -31,4 +31,14 @@ export const boardSizes: BoardType[] = [
     price: "$39.99",
     isInStock: true,
   },
+  {
+    size: "x-large",
+    boardWidth: 600,
+    grooveWidth: 540,
+    name: "X-Large",
+    label: "X-Large (24 inch)",
+    description: "An extra large board for the biggest projects.",
+    price: "$49.99",
+    isInStock: true,
+  },
 ];

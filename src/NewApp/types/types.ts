@@ -9,4 +9,4 @@ export type BoardType = {
   isInStock: boolean;
 };
 
-export type BoardSizeKey = "small" | "medium" | "large";
+export type BoardSizeKey = "small" | "medium" | "large" | "x-large";

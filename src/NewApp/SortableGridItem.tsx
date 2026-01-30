@@ -1,13 +1,16 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { GridItemData } from "./GridItem";
+import { SvgItem } from "./SvgItem";
+import { AppleIcon } from "./icons";
 
 export function SortableGridItem({
   id,
   text,
   width,
-  height,
   backgroundImage,
+  svgSrc,
+  icon,
 }: GridItemData) {
   const {
     attributes,
@@ -18,7 +21,7 @@ export function SortableGridItem({
     isDragging,
   } = useSortable({
     id: id,
-    data: { width, height },
+    data: { width },
   });
 
   const style = {
@@ -26,24 +29,12 @@ export function SortableGridItem({
     transition,
     opacity: isDragging ? 0.5 : 1,
     height: "100%",
-    backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
+    cursor: "grab",
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex justify-center items-center cursor-grab bg-blue-500 text-white rounded border-2 border-blue-700`}
-      {...listeners}
-      {...attributes}>
-      <div className="text-center">
-        <div className="font-bold">{text}</div>
-        <div className="text-sm">
-          W: {width} H: {height}
-        </div>
-      </div>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      {icon}
     </div>
   );
 }
