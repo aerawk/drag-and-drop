@@ -1,3 +1,16 @@
+import { useViewportSize } from "@mantine/hooks";
+
+export function getScaledWidth(width: number, viewportWidth: number) {
+  if (viewportWidth < 640) {
+    return width * 1;
+  } else if (viewportWidth < 768) {
+    return width * 1.25;
+  } else if (viewportWidth < 1024) {
+    return width * 1.5;
+  } else {
+    return width * 2;
+  }
+}
 export function ItemIcon({
   src,
   alt,
@@ -7,10 +20,12 @@ export function ItemIcon({
   alt: string;
   width: number;
 }) {
+  const { width: viewportWidth } = useViewportSize();
+
   return (
-    // <div className="w-fit scale-[0.25] sm:scale-[0.50] md:scale-[.75] lg:scale-[1]">
-    <div className="w-fit">
-      <img src={src} alt={alt} width={width} />
+    <div
+      style={{ width: getScaledWidth(width, viewportWidth), padding: "0 2px" }}>
+      <img src={src} alt={alt} width="100%" />
     </div>
   );
 }

@@ -16,7 +16,14 @@ import { boardSizes } from "./data/boards";
 import type { BoardType } from "./types/types";
 import { ItemPicker } from "./ItemPicker";
 import MountainIcon from "./icons/MountainIcon";
-import { AppleIcon, SchoolBuildingIcon, SchoolBusIcon } from "./icons";
+import {
+  AppleIcon,
+  SchoolBuildingIcon,
+  SchoolBusIcon,
+  ArrowCursorIcon,
+  BooksStackedIcon,
+  EraserTopperIcon,
+} from "./icons";
 
 export function NewApp() {
   const cards = Object.values(boardSizes).map((item) => (
@@ -45,40 +52,40 @@ export function NewApp() {
 
   // Item templates for creating new items
   const itemTemplates: GridItemData[] = [
-    { id: "1", text: "Tiny", width: 25, icon: <div>New</div> },
+    // { id: "1", text: "Tiny", width: 25, icon: <div>New</div> },
     {
       id: "2",
       text: "Small",
       width: 50,
-      backgroundImage: "/src/assets/Mountains.svg",
+      svgSrc: "/src/assets/Mountains.svg",
       icon: <MountainIcon size={"small"} />,
     },
     {
       id: "3",
       text: "Medium",
-      width: 75,
-      backgroundImage: "/src/assets/Apple.svg",
+      width: 60,
+      svgSrc: "/src/assets/Apple.svg",
       icon: <AppleIcon />,
     },
     {
       id: "4",
       text: "Large",
-      width: 250,
-      backgroundImage: "/src/assets/SchoolBus.svg",
+      width: 200,
+      svgSrc: "/src/assets/SchoolBus.svg",
       icon: <SchoolBusIcon />,
     },
     {
       id: "5",
       text: "Big",
-      width: 125,
-      backgroundImage: "/src/assets/SchoolBuilding.svg",
+      width: 250,
+      svgSrc: "/src/assets/SchoolBuilding.svg",
       icon: <SchoolBuildingIcon />,
     },
     {
       id: "6",
       text: "Huge",
       width: 150,
-      backgroundImage: "/src/assets/Mountains.svg",
+      svgSrc: "/src/assets/Mountains.svg",
       icon: <MountainIcon size={"large"} />,
     },
   ];
@@ -105,6 +112,7 @@ export function NewApp() {
       width: template.width,
       backgroundImage: template.backgroundImage,
       icon: <div>New</div>, // Placeholder, could be enhanced to select an icon
+      svgSrc: "",
     };
     setAvailableItems([...availableItems, newItem]);
     setItemCounter(itemCounter + 1);
@@ -263,10 +271,13 @@ export function NewApp() {
           id="title-and-grid"
           className="flex flex-col flex-1 lg:flex-2 min-w-0">
           <h1 className="text-2xl font-bold">Grid Drag & Drop</h1>
-          {/* <div>
+          {/* <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
             <AppleIcon />
             <SchoolBuildingIcon />
             <SchoolBusIcon />
+            <ArrowCursorIcon />
+            <BooksStackedIcon />
+            <EraserTopperIcon />
           </div> */}
 
           <div id="grid-container" className="flex flex-col gap-4">
@@ -292,6 +303,15 @@ export function NewApp() {
         </div>
 
         <aside className="w-full lg:w-80 space-y-4 md:space-y-6 lg:pt-5 min-w-0">
+          <AvailableItemsPool
+            items={availableItems}
+            onRemove={removeItemFromAvailable}
+            onAddToGrid={addItemToGrid}
+            grid1Items={grid1Items}
+            grid2Items={grid2Items}
+            grid3Items={grid3Items}
+            activeBoardSize={activeBoardSize}
+          />
           <span className="text-sm md:text-base font-medium">
             Select Board Size:
           </span>
@@ -314,16 +334,6 @@ export function NewApp() {
           </Button>
 
           <ItemCreator templates={itemTemplates} onCreate={createNewItem} />
-
-          <AvailableItemsPool
-            items={availableItems}
-            onRemove={removeItemFromAvailable}
-            onAddToGrid={addItemToGrid}
-            grid1Items={grid1Items}
-            grid2Items={grid2Items}
-            grid3Items={grid3Items}
-            activeBoardSize={activeBoardSize}
-          />
         </aside>
       </div>
       {/* <DragOverlay>
@@ -435,6 +445,8 @@ function ItemWithContextMenu({
           onTouchCancel={handleLongPressEnd}>
           <GridItem
             {...item}
+            svgSrc={item.svgSrc}
+            key={item.id}
             useDragHandle={true}
             onItemClick={handleItemClick}
           />

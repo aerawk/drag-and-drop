@@ -1,13 +1,14 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { SvgItem } from "./SvgItem";
+import { ItemIcon } from "./ItemIcon";
 
 export interface GridItemData {
   id: string;
   text: string;
   width: number; // Width in grid units (1-10)
   backgroundImage?: string; // Optional background image URL (deprecated - use svgSrc)
-  svgSrc?: string; // Optional SVG source path for properly constrained rendering
+  svgSrc: string; // Optional SVG source path for properly constrained rendering
   icon: React.ReactNode;
 }
 
@@ -42,9 +43,9 @@ export function GridItem({
   const style = {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.5 : 1,
-    backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
+    // backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+    // backgroundSize: "cover",
+    // backgroundPosition: "center",
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -57,24 +58,25 @@ export function GridItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group/item relative flex flex-col justify-center items-center py-3 sm:py-4 bg-blue-500 text-white rounded border-2 border-transparent hover:border-blue-700 ${
+      className={`group/item relative flex flex-col justify-center items-center text-white rounded border-2 border-transparent hover:border-green-300 ${
         useDragHandle ? "cursor-pointer" : "cursor-grab"
       }`}
       onClick={useDragHandle ? handleClick : undefined}
       {...(!useDragHandle ? listeners : {})}
       {...(!useDragHandle ? attributes : {})}>
-      {/* {svgSrc && (
-        <div className="w-full px-2 mb-2 pointer-events-none">
-          <SvgItem width={width} src={svgSrc} alt={text} />
-        </div>
-      )} */}
-      {icon}
-      <div className="text-center px-1 pointer-events-none">
+      {/* {svgSrc && ( */}
+      <div className="w-full px-2 mb-2 pointer-events-none">
+        {/* <SvgItem width={width} src={svgSrc} alt={text} /> */}
+        <ItemIcon src={svgSrc} alt={text} width={60} />
+      </div>
+      {/* )} */}
+      {/* {icon} */}
+      {/* <div className="text-center px-1 pointer-events-none">
         <div className="font-bold text-xs sm:text-sm md:text-base truncate">
           {text}
         </div>
         <div className="text-[10px] sm:text-xs">W: {width}</div>
-      </div>
+      </div> */}
 
       {/* Drag Handle - only shown when useDragHandle is true */}
       {useDragHandle && (

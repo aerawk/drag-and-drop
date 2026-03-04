@@ -1,8 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { GridItemData } from "./GridItem";
-import { SvgItem } from "./SvgItem";
-import { AppleIcon } from "./icons";
 
 export function SortableGridItem({
   id,
