@@ -1,8 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { SvgItem } from "./SvgItem";
-import { ItemIcon } from "./ItemIcon";
-
+import { Tooltip } from "@mantine/core";
 export interface GridItemData {
   id: string;
   text: string;
@@ -55,53 +53,58 @@ export function GridItem({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group/item relative flex flex-col justify-center items-center text-white rounded border-2 border-transparent hover:border-green-300 ${
-        useDragHandle ? "cursor-pointer" : "cursor-grab"
-      }`}
-      onClick={useDragHandle ? handleClick : undefined}
-      {...(!useDragHandle ? listeners : {})}
-      {...(!useDragHandle ? attributes : {})}>
-      {/* {svgSrc && ( */}
-      <div className="w-full px-2 mb-2 pointer-events-none">
-        {/* <SvgItem width={width} src={svgSrc} alt={text} /> */}
-        <ItemIcon src={svgSrc} alt={text} width={60} />
-      </div>
-      {/* )} */}
-      {/* {icon} */}
-      {/* <div className="text-center px-1 pointer-events-none">
+    <Tooltip label={`${text}, ${width}`} position="top" withArrow>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`group/item relative h-full flex flex-col justify-center items-center text-white rounded border-2 border-transparent hover:border-green-300 ${
+          useDragHandle ? "cursor-pointer" : "cursor-grab"
+        }`}
+        onClick={useDragHandle ? handleClick : undefined}
+        {...(!useDragHandle ? listeners : {})}
+        {...(!useDragHandle ? attributes : {})}>
+        {/* {svgSrc && ( */}
+        <div className="w-full h-full px-2 flex items-center justify-center pointer-events-none">
+          <img
+            src={svgSrc}
+            alt={text}
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
+        {/* )} */}
+        {/* {icon} */}
+        {/* <div className="text-center px-1 pointer-events-none">
         <div className="font-bold text-xs sm:text-sm md:text-base truncate">
-          {text}
+        {text}
         </div>
         <div className="text-[10px] sm:text-xs">W: {width}</div>
-      </div> */}
+        </div> */}
 
-      {/* Drag Handle - only shown when useDragHandle is true */}
-      {useDragHandle && (
-        <div
-          className={`absolute top-1/2 -translate-y-1/2 -left-3 w-6 h-10 bg-gray-300 hover:bg-gray-400 rounded cursor-grab flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-auto shadow-md ${
-            isDragging ? "opacity-100" : ""
-          }`}
-          {...listeners}
-          {...attributes}
-          title="Drag to move">
-          <svg
-            width="12"
-            height="16"
-            viewBox="0 0 12 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg">
-            <circle cx="4" cy="4" r="1" fill="white" />
-            <circle cx="8" cy="4" r="1" fill="white" />
-            <circle cx="4" cy="8" r="1" fill="white" />
-            <circle cx="8" cy="8" r="1" fill="white" />
-            <circle cx="4" cy="12" r="1" fill="white" />
-            <circle cx="8" cy="12" r="1" fill="white" />
-          </svg>
-        </div>
-      )}
-    </div>
+        {/* Drag Handle - only shown when useDragHandle is true */}
+        {useDragHandle && (
+          <div
+            className={`absolute top-1/2 -translate-y-1/2 -left-3 w-6 h-10 bg-gray-300 hover:bg-gray-400 rounded cursor-grab flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-auto shadow-md ${
+              isDragging ? "opacity-100" : ""
+            }`}
+            {...listeners}
+            {...attributes}
+            title="Drag to move">
+            <svg
+              width="12"
+              height="16"
+              viewBox="0 0 12 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <circle cx="4" cy="4" r="1" fill="white" />
+              <circle cx="8" cy="4" r="1" fill="white" />
+              <circle cx="4" cy="8" r="1" fill="white" />
+              <circle cx="8" cy="8" r="1" fill="white" />
+              <circle cx="4" cy="12" r="1" fill="white" />
+              <circle cx="8" cy="12" r="1" fill="white" />
+            </svg>
+          </div>
+        )}
+      </div>
+    </Tooltip>
   );
 }

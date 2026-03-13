@@ -1,4 +1,5 @@
 import { useViewportSize } from "@mantine/hooks";
+import { Tooltip } from "@mantine/core";
 
 export function getScaledWidth(width: number, viewportWidth: number) {
   if (viewportWidth < 640) {
@@ -23,9 +24,14 @@ export function ItemIcon({
   const { width: viewportWidth } = useViewportSize();
 
   return (
-    <div
-      style={{ width: getScaledWidth(width, viewportWidth), padding: "0 2px" }}>
-      <img src={src} alt={alt} width="100%" />
-    </div>
+    <Tooltip label={`${alt}, ${width}`} position="top" withArrow>
+      <div
+        style={{
+          width: getScaledWidth(width, viewportWidth),
+          padding: "0 2px",
+        }}>
+        <img src={src} alt={alt} width="100%" />
+      </div>
+    </Tooltip>
   );
 }

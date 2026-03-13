@@ -15,15 +15,7 @@ import { useState as useReactState, useRef, useEffect } from "react";
 import { boardSizes } from "./data/boards";
 import type { BoardType } from "./types/types";
 import { ItemPicker } from "./ItemPicker";
-import MountainIcon from "./icons/MountainIcon";
-import {
-  AppleIcon,
-  SchoolBuildingIcon,
-  SchoolBusIcon,
-  ArrowCursorIcon,
-  BooksStackedIcon,
-  EraserTopperIcon,
-} from "./icons";
+import { buildIconItems } from "./data/iconRegistry";
 
 export function NewApp() {
   const cards = Object.values(boardSizes).map((item) => (
@@ -50,45 +42,8 @@ export function NewApp() {
     boardSizes[1],
   );
 
-  // Item templates for creating new items
-  const itemTemplates: GridItemData[] = [
-    // { id: "1", text: "Tiny", width: 25, icon: <div>New</div> },
-    {
-      id: "2",
-      text: "Small",
-      width: 50,
-      svgSrc: "/src/assets/Mountains.svg",
-      icon: <MountainIcon size={"small"} />,
-    },
-    {
-      id: "3",
-      text: "Medium",
-      width: 60,
-      svgSrc: "/src/assets/Apple.svg",
-      icon: <AppleIcon />,
-    },
-    {
-      id: "4",
-      text: "Large",
-      width: 200,
-      svgSrc: "/src/assets/SchoolBus.svg",
-      icon: <SchoolBusIcon />,
-    },
-    {
-      id: "5",
-      text: "Big",
-      width: 250,
-      svgSrc: "/src/assets/SchoolBuilding.svg",
-      icon: <SchoolBuildingIcon />,
-    },
-    {
-      id: "6",
-      text: "Huge",
-      width: 150,
-      svgSrc: "/src/assets/Mountains.svg",
-      icon: <MountainIcon size={"large"} />,
-    },
-  ];
+  // Item templates for creating new items - built from centralized icon registry
+  const itemTemplates: GridItemData[] = buildIconItems();
 
   const [availableItems, setAvailableItems] =
     useState<GridItemData[]>(itemTemplates);
@@ -99,24 +54,24 @@ export function NewApp() {
   const [grid2Items, setGrid2Items] = useState<GridItemData[]>([]);
   const [grid3Items, setGrid3Items] = useState<GridItemData[]>([]);
   const [activeItem, setActiveItem] = useState<GridItemData | null>(null);
-  const [itemCounter, setItemCounter] = useState(6);
+  // const [itemCounter, setItemCounter] = useState(itemTemplates.length);
 
-  const createNewItem = (template: {
-    text: string;
-    width: number;
-    backgroundImage?: string;
-  }) => {
-    const newItem: GridItemData = {
-      id: `item-${itemCounter}`,
-      text: template.text,
-      width: template.width,
-      backgroundImage: template.backgroundImage,
-      icon: <div>New</div>, // Placeholder, could be enhanced to select an icon
-      svgSrc: "",
-    };
-    setAvailableItems([...availableItems, newItem]);
-    setItemCounter(itemCounter + 1);
-  };
+  // const createNewItem = (template: {
+  //   text: string;
+  //   width: number;
+  //   backgroundImage?: string;
+  // }) => {
+  //   const newItem: GridItemData = {
+  //     id: `item-${itemCounter}`,
+  //     text: template.text,
+  //     width: template.width,
+  //     backgroundImage: template.backgroundImage,
+  //     icon: <div>New</div>, // Placeholder, could be enhanced to select an icon
+  //     svgSrc: "",
+  //   };
+  //   setAvailableItems([...availableItems, newItem]);
+  //   setItemCounter(itemCounter + 1);
+  // };
 
   const removeItemFromAvailable = (itemId: string) => {
     setAvailableItems(availableItems.filter((i) => i.id !== itemId));
@@ -333,7 +288,7 @@ export function NewApp() {
             Choose Pieces
           </Button>
 
-          <ItemCreator templates={itemTemplates} onCreate={createNewItem} />
+          {/* <ItemCreator templates={itemTemplates} onCreate={createNewItem} /> */}
         </aside>
       </div>
       {/* <DragOverlay>
@@ -351,35 +306,35 @@ export function NewApp() {
   );
 }
 
-function ItemCreator({
-  templates,
-  onCreate,
-}: {
-  templates: { text: string; width: number; backgroundImage?: string }[];
-  onCreate: (template: {
-    text: string;
-    width: number;
-    backgroundImage?: string;
-  }) => void;
-}) {
-  return (
-    <div className="border-2 border-purple-300 rounded-lg p-3 md:p-4 bg-purple-900">
-      <h3 className="font-bold mb-2 md:mb-3 text-sm md:text-base">
-        Create New Items
-      </h3>
-      <div className="flex flex-wrap gap-1.5 md:gap-2">
-        {templates.map((template, index) => (
-          <button
-            key={index}
-            onClick={() => onCreate(template)}
-            className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 text-xs sm:text-sm md:text-base bg-purple-500 hover:bg-purple-600 text-white rounded font-semibold transition-colors">
-            + {template.text} ({template.width})
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+// function ItemCreator({
+//   templates,
+//   onCreate,
+// }: {
+//   templates: { text: string; width: number; backgroundImage?: string }[];
+//   onCreate: (template: {
+//     text: string;
+//     width: number;
+//     backgroundImage?: string;
+//   }) => void;
+// }) {
+//   return (
+//     <div className="border-2 border-purple-300 rounded-lg p-3 md:p-4 bg-purple-900">
+//       <h3 className="font-bold mb-2 md:mb-3 text-sm md:text-base">
+//         Create New Items
+//       </h3>
+//       <div className="flex flex-wrap gap-1.5 md:gap-2">
+//         {templates.map((template, index) => (
+//           <button
+//             key={index}
+//             onClick={() => onCreate(template)}
+//             className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 text-xs sm:text-sm md:text-base bg-purple-500 hover:bg-purple-600 text-white rounded font-semibold transition-colors">
+//             + {template.text} ({template.width})
+//           </button>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
 
 function ItemWithContextMenu({
   item,
@@ -439,7 +394,7 @@ function ItemWithContextMenu({
       <Menu.Target>
         <div
           ref={containerRef}
-          className="relative w-24 sm:w-28 md:w-32 group"
+          className="relative w-24 sm:w-28 md:w-32 aspect-square group"
           onTouchStart={handleLongPressStart}
           onTouchEnd={handleLongPressEnd}
           onTouchCancel={handleLongPressEnd}>
@@ -512,6 +467,9 @@ function AvailableItemsPool({
   const style = {
     backgroundColor: isOver ? "#f0fdf4" : undefined,
     borderColor: isOver ? "#22c55e" : undefined,
+    height: "fit-content",
+    maxHeight: "400px",
+    overflow: "auto",
   };
 
   const getAvailableGrids = (item: GridItemData) => {

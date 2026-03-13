@@ -34,12 +34,13 @@ export function GridDroppable({
     backgroundColor: isOver ? "#ae8856ea" : "#ae8856",
     borderColor: isOver ? "##997547" : "#ae8856",
     width: `${getScaledWidth(maxWidth, viewportWidth)}px`,
+    boxShadow: "12px 0px #ae8856,  -12px 0px #ae8856",
   };
 
   const dropAreaStyle = {
     backgroundColor: isOver ? "#4a4a4aa2" : "transparent",
     borderColor: isOver ? "##997547" : "transparent",
-    padding: "0 8px",
+    // padding: "0 8px",
     height: "fit-content",
     minHeight: "100px",
     bottom: "-8px",
@@ -62,7 +63,7 @@ export function GridDroppable({
           <div
             className="grid gap-0 items-end relative"
             style={{
-              gridTemplateColumns: `repeat(${columns}, 1px)`,
+              gridTemplateColumns: `repeat(${columns + 16}, 1px)`,
               gridAutoRows: "auto",
               // minWidth: `${Math.min(maxWidth * 1.5, 300)}px`,
               width: "100%",
