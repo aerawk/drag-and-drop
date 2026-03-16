@@ -22,16 +22,29 @@ export function SortableGridItem({
     data: { width },
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
+  // For displaced (non-dragged) items, dampen the transform so they only
+  // shift slightly rather than jumping far from their original position.
+  const dampenedTransform =
+    transform && !isDragging
+      ? {
+          ...transform,
+          x: Math.round(transform.x * 0.5),
+          y: Math.round(transform.y * 0.05),
+        }
+      : transform;
+
+  const itemStyle: React.CSSProperties = {
+    transform: CSS.Translate.toString(dampenedTransform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.8 : 1,
     height: "100%",
     cursor: "grab",
+    position: "relative",
+    zIndex: isDragging ? 9999 : "auto",
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+    <div ref={setNodeRef} style={itemStyle} {...listeners} {...attributes}>
       {icon}
     </div>
   );

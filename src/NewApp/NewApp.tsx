@@ -2,8 +2,8 @@ import {
   DndContext,
   type DragEndEvent,
   useDroppable,
-  DragOverlay,
   type DragStartEvent,
+  pointerWithin,
 } from "@dnd-kit/core";
 import { useState } from "react";
 import { GridDroppable } from "./GridDroppable";
@@ -220,7 +220,10 @@ export function NewApp() {
   }
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext
+      collisionDetection={pointerWithin}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}>
       <div
         id="main-container"
         className="flex flex-col lg:flex-row w-full max-w-full p-3 sm:p-4 md:p-6 gap-4 md:gap-6 overflow-x-hidden">
@@ -228,14 +231,6 @@ export function NewApp() {
           id="title-and-grid"
           className="flex flex-col flex-1 lg:flex-2 min-w-0">
           <h1 className="text-2xl font-bold">Grid Drag & Drop</h1>
-          {/* <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
-            <AppleIcon />
-            <SchoolBuildingIcon />
-            <SchoolBusIcon />
-            <ArrowCursorIcon />
-            <BooksStackedIcon />
-            <EraserTopperIcon />
-          </div> */}
 
           <div id="grid-container" className="flex flex-col gap-4">
             <GridDroppable
