@@ -1,14 +1,14 @@
 import { ItemIcon } from "../ItemIcon";
 import type { GridItemData } from "../GridItem";
 
-interface IconRegistryEntry {
+export interface IconRegistryEntry {
   name: string;
   svgSrc: string;
   width: number;
   iconOverride?: React.ReactNode;
 }
 
-const iconEntries: IconRegistryEntry[] = [
+export const iconEntries: IconRegistryEntry[] = [
   { name: "A Plus", svgSrc: "/src/assets/A+.svg", width: 40 },
   { name: "Abc", svgSrc: "/src/assets/Abc.svg", width: 60 },
   { name: "Alarm Clock", svgSrc: "/src/assets/Alarm Clock.svg", width: 60 },
@@ -251,7 +251,7 @@ const iconEntries: IconRegistryEntry[] = [
   },
 ];
 
-function toKebabId(name: string): string {
+export function toKebabId(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-");
 }
 

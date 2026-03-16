@@ -1,41 +1,66 @@
 import { useState } from "react";
+import { Button, Tooltip } from "@mantine/core";
+import { iconEntries, type IconRegistryEntry } from "./data/iconRegistry";
 
-export const ItemPicker = () => {
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+interface ItemPickerProps {
+  onAddItems: (selectedEntries: IconRegistryEntry[]) => void;
+}
 
-  const handleItemClick = (itemIndex: number) => {
-    if (!selectedItems.includes(itemIndex)) {
-      setSelectedItems([...selectedItems, itemIndex]);
-    } else {
-      setSelectedItems(selectedItems.filter((index) => index !== itemIndex));
-    }
+export const ItemPicker = ({ onAddItems }: ItemPickerProps) => {
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const toggleItem = (index: number) => {
+    setSelectedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   };
 
-  const isItemSelected = (itemIndex: number) => {
-    return selectedItems.includes(itemIndex);
+  const handleAdd = () => {
+    const selected = Array.from(selectedIndices).map((i) => iconEntries[i]);
+    onAddItems(selected);
   };
+
   return (
-    <div className="p-4">
-      <div className="grid grid-cols-8 gap-2">
-        {Array(50)
-          .fill(null)
-          .map((_, index) => (
+    <div>
+      <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-[60vh] overflow-y-auto p-1">
+        {iconEntries.map((entry, index) => (
+          <Tooltip
+            key={index}
+            label={`${entry.name}, ${entry.width}mm`}
+            position="top"
+            withArrow>
             <div
-              onClick={() => handleItemClick(index + 1)}
-              className="w-16 h-16 flex items-center justify-center rounded"
-              style={{
-                backgroundColor: isItemSelected(index + 1)
-                  ? "mediumpurple"
-                  : "rebeccapurple",
-              }}
-              key={index}>
-              {index + 1}
+              onClick={() => toggleItem(index)}
+              className={`flex flex-col items-center justify-center p-2 rounded cursor-pointer border-2 transition-colors ${
+                selectedIndices.has(index)
+                  ? "border-purple-500 bg-purple-100"
+                  : "border-transparent hover:border-gray-300"
+              }`}>
+              <img
+                src={entry.svgSrc}
+                alt={entry.name}
+                className="w-12 h-12 object-contain"
+              />
+              <span className="text-xs text-center mt-1 truncate w-full">
+                {entry.name}
+              </span>
             </div>
-          ))}
+          </Tooltip>
+        ))}
       </div>
-      <span className="mt-4 block">
-        Selected Items: {selectedItems.join(", ")}
-      </span>
+      <div className="mt-4 flex justify-end">
+        <Button disabled={selectedIndices.size === 0} onClick={handleAdd}>
+          {selectedIndices.size > 0 ? `Add (${selectedIndices.size})` : "Add"}
+        </Button>
+      </div>
     </div>
   );
 };

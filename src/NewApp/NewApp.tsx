@@ -15,7 +15,8 @@ import { useState as useReactState, useRef, useEffect } from "react";
 import { boardSizes } from "./data/boards";
 import type { BoardType } from "./types/types";
 import { ItemPicker } from "./ItemPicker";
-import { buildIconItems } from "./data/iconRegistry";
+import { toKebabId, type IconRegistryEntry } from "./data/iconRegistry";
+import { ItemIcon } from "./ItemIcon";
 
 export function NewApp() {
   const cards = Object.values(boardSizes).map((item) => (
@@ -42,11 +43,7 @@ export function NewApp() {
     boardSizes[1],
   );
 
-  // Item templates for creating new items - built from centralized icon registry
-  const itemTemplates: GridItemData[] = buildIconItems();
-
-  const [availableItems, setAvailableItems] =
-    useState<GridItemData[]>(itemTemplates);
+  const [availableItems, setAvailableItems] = useState<GridItemData[]>([]);
 
   const [opened, { open, close }] = useDisclosure(false);
 
@@ -54,24 +51,29 @@ export function NewApp() {
   const [grid2Items, setGrid2Items] = useState<GridItemData[]>([]);
   const [grid3Items, setGrid3Items] = useState<GridItemData[]>([]);
   const [activeItem, setActiveItem] = useState<GridItemData | null>(null);
-  // const [itemCounter, setItemCounter] = useState(itemTemplates.length);
+  const itemCounterRef = useRef(0);
 
-  // const createNewItem = (template: {
-  //   text: string;
-  //   width: number;
-  //   backgroundImage?: string;
-  // }) => {
-  //   const newItem: GridItemData = {
-  //     id: `item-${itemCounter}`,
-  //     text: template.text,
-  //     width: template.width,
-  //     backgroundImage: template.backgroundImage,
-  //     icon: <div>New</div>, // Placeholder, could be enhanced to select an icon
-  //     svgSrc: "",
-  //   };
-  //   setAvailableItems([...availableItems, newItem]);
-  //   setItemCounter(itemCounter + 1);
-  // };
+  const handleAddItems = (selectedEntries: IconRegistryEntry[]) => {
+    const newItems: GridItemData[] = selectedEntries.map((entry) => {
+      itemCounterRef.current += 1;
+      const uniqueId = `${toKebabId(entry.name)}-${itemCounterRef.current}`;
+      return {
+        id: uniqueId,
+        text: entry.name,
+        width: entry.width,
+        svgSrc: entry.svgSrc,
+        icon: (
+          <ItemIcon
+            src={entry.svgSrc}
+            alt={`${entry.name} Icon`}
+            width={entry.width}
+          />
+        ),
+      };
+    });
+    setAvailableItems((prev) => [...prev, ...newItems]);
+    close();
+  };
 
   const removeItemFromAvailable = (itemId: string) => {
     setAvailableItems(availableItems.filter((i) => i.id !== itemId));
@@ -258,6 +260,9 @@ export function NewApp() {
         </div>
 
         <aside className="w-full lg:w-80 space-y-4 md:space-y-6 lg:pt-5 min-w-0">
+          <Button variant="default" onClick={open} className="w-full sm:w-auto">
+            Choose Pieces
+          </Button>
           <AvailableItemsPool
             items={availableItems}
             onRemove={removeItemFromAvailable}
@@ -284,57 +289,23 @@ export function NewApp() {
             }}>
             <div className="pt-md gap-xs">{cards}</div>
           </Radio.Group>
-          <Button variant="default" onClick={open} className="w-full sm:w-auto">
-            Choose Pieces
-          </Button>
-
-          {/* <ItemCreator templates={itemTemplates} onCreate={createNewItem} /> */}
         </aside>
       </div>
       {/* <DragOverlay>
         {activeItem ? <GridItem {...activeItem} /> : null}
       </DragOverlay> */}
       <Modal
+        id="item-picker-modal"
         opened={opened}
         onClose={close}
         title="Pick Your Pieces"
         centered
         size="lg">
-        <ItemPicker />
+        <ItemPicker onAddItems={handleAddItems} />
       </Modal>
     </DndContext>
   );
 }
-
-// function ItemCreator({
-//   templates,
-//   onCreate,
-// }: {
-//   templates: { text: string; width: number; backgroundImage?: string }[];
-//   onCreate: (template: {
-//     text: string;
-//     width: number;
-//     backgroundImage?: string;
-//   }) => void;
-// }) {
-//   return (
-//     <div className="border-2 border-purple-300 rounded-lg p-3 md:p-4 bg-purple-900">
-//       <h3 className="font-bold mb-2 md:mb-3 text-sm md:text-base">
-//         Create New Items
-//       </h3>
-//       <div className="flex flex-wrap gap-1.5 md:gap-2">
-//         {templates.map((template, index) => (
-//           <button
-//             key={index}
-//             onClick={() => onCreate(template)}
-//             className="px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 text-xs sm:text-sm md:text-base bg-purple-500 hover:bg-purple-600 text-white rounded font-semibold transition-colors">
-//             + {template.text} ({template.width})
-//           </button>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
 
 function ItemWithContextMenu({
   item,
@@ -503,8 +474,8 @@ function AvailableItemsPool({
       <div className="flex flex-wrap gap-2">
         {items.length === 0 ? (
           <p className="text-gray-500 italic text-xs sm:text-sm">
-            No items available. Create new items above or drag items here to
-            return them.
+            No items yet. Click "Choose Pieces" to add items, or drag items here
+            to return them.
           </p>
         ) : (
           items.map((item) => (
