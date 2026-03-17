@@ -51,7 +51,7 @@ export function GridDroppable({
   }, [maxWidth, viewportWidth]);
 
   return (
-    <div className="flex flex-col gap-2 flex-1 min-w-0 w-full relative">
+    <div className="flex flex-col gap-2 flex-1 min-w-0 w-full relative items-center">
       <h3 className="font-bold text-base md:text-lg">{title}</h3>
       <div
         ref={setNodeRef}

@@ -18,6 +18,7 @@ interface GridItemProps extends GridItemData {
     listeners: any;
     attributes: any;
   };
+  isOverlay?: boolean;
 }
 
 export function GridItem({
@@ -31,11 +32,13 @@ export function GridItem({
   onItemClick,
   onLongPress,
   dragHandleProps,
+  isOverlay = false,
 }: GridItemProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: id,
       data: { width },
+      disabled: isOverlay,
     });
 
   const style = {

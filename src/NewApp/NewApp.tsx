@@ -1,5 +1,6 @@
 import {
   DndContext,
+  DragOverlay,
   type DragEndEvent,
   useDroppable,
   type DragStartEvent,
@@ -9,7 +10,16 @@ import { useState } from "react";
 import { GridDroppable } from "./GridDroppable";
 import { GridItem, type GridItemData } from "./GridItem";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Radio, Group, Text, Modal, Button, Menu } from "@mantine/core";
+import {
+  Radio,
+  Group,
+  Text,
+  Modal,
+  Button,
+  Menu,
+  Drawer,
+  Select,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useState as useReactState, useRef, useEffect } from "react";
 import { boardSizes } from "./data/boards";
@@ -46,6 +56,8 @@ export function NewApp() {
   const [availableItems, setAvailableItems] = useState<GridItemData[]>([]);
 
   const [opened, { open, close }] = useDisclosure(false);
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
+    useDisclosure(true);
 
   const [grid1Items, setGrid1Items] = useState<GridItemData[]>([]);
   const [grid2Items, setGrid2Items] = useState<GridItemData[]>([]);
@@ -153,7 +165,6 @@ export function NewApp() {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveItem(null);
-
     if (!over) return;
 
     const itemLocation = findItemLocation(active.id as string);
@@ -226,11 +237,14 @@ export function NewApp() {
       onDragEnd={handleDragEnd}>
       <div
         id="main-container"
-        className="flex flex-col lg:flex-row w-full max-w-full p-3 sm:p-4 md:p-6 gap-4 md:gap-6 overflow-x-hidden">
-        <div
-          id="title-and-grid"
-          className="flex flex-col flex-1 lg:flex-2 min-w-0">
-          <h1 className="text-2xl font-bold">Grid Drag & Drop</h1>
+        className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
+        <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">Grid Drag & Drop</h2>
+            <Button variant="" size="sm" onClick={toggleDrawer}>
+              {drawerOpened ? "Hide Panel" : "Show Panel"}
+            </Button>
+          </div>
 
           <div id="grid-container" className="flex flex-col gap-4">
             <GridDroppable
@@ -253,24 +267,49 @@ export function NewApp() {
             />
           </div>
         </div>
+      </div>
+      <DragOverlay dropAnimation={null}>
+        {activeItem ? activeItem.icon : null}
+      </DragOverlay>
+      <Drawer
+        opened={drawerOpened}
+        onClose={closeDrawer}
+        title="Add Pieces and Select Your Board Size!"
+        position="bottom"
+        withOverlay={false}
+        trapFocus={false}
+        lockScroll={false}
+        size={"sm"}
+        styles={{
+          title: { fontWeight: 600 },
+          content: {
+            borderTop: "1px solid #313131",
+            boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.5)",
+            backgroundColor: "#3c3c3c",
+          },
+        }}
+        radius="lg"
+        shadow="xl">
+        <div className="flex flex-row space-x-4">
+          <div className="flex flex-col gap-4 flex-2">
+            <AvailableItemsPool
+              items={availableItems}
+              onRemove={removeItemFromAvailable}
+              onAddToGrid={addItemToGrid}
+              grid1Items={grid1Items}
+              grid2Items={grid2Items}
+              grid3Items={grid3Items}
+              activeBoardSize={activeBoardSize}
+            />
+            <Button
+              variant="default"
+              onClick={open}
+              className="w-full sm:w-auto">
+              Browse Pieces
+            </Button>
+          </div>
 
-        <aside className="w-full lg:w-80 space-y-4 md:space-y-6 lg:pt-5 min-w-0">
-          <Button variant="default" onClick={open} className="w-full sm:w-auto">
-            Choose Pieces
-          </Button>
-          <AvailableItemsPool
-            items={availableItems}
-            onRemove={removeItemFromAvailable}
-            onAddToGrid={addItemToGrid}
-            grid1Items={grid1Items}
-            grid2Items={grid2Items}
-            grid3Items={grid3Items}
-            activeBoardSize={activeBoardSize}
-          />
-          <span className="text-sm md:text-base font-medium">
-            Select Board Size:
-          </span>
-          <Radio.Group
+          {/* <Radio.Group
             value={activeBoardSize.name}
             onChange={(name) => {
               const selected = boardSizes.find((b) => b.name === name);
@@ -283,12 +322,29 @@ export function NewApp() {
               description: "text-xs md:text-sm",
             }}>
             <div className="pt-md gap-xs">{cards}</div>
-          </Radio.Group>
-        </aside>
-      </div>
-      {/* <DragOverlay>
-        {activeItem ? <GridItem {...activeItem} /> : null}
-      </DragOverlay> */}
+          </Radio.Group> */}
+          <div className="flex flex-1">
+            <Select
+              height={80}
+              label="Choose your board size"
+              description="Select between our small, medium, and large boards to fit your project needs!"
+              value={activeBoardSize.name}
+              onChange={(name) => {
+                const selected = boardSizes.find((b) => b.name === name);
+                if (selected) setActiveBoardSize(selected);
+              }}
+              data={boardSizes.map((b) => ({
+                value: b.name,
+                label: `${b.name} - ${b.description} - ${b.price}`,
+              }))}
+              classNames={{
+                label: "text-sm md:text-base",
+                description: "text-xs md:text-sm",
+              }}
+            />
+          </div>
+        </div>
+      </Drawer>
       <Modal
         id="item-picker-modal"
         opened={opened}

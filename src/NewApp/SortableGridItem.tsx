@@ -36,9 +36,9 @@ export function SortableGridItem({
   const itemStyle: React.CSSProperties = {
     transform: CSS.Translate.toString(dampenedTransform),
     transition,
-    opacity: isDragging ? 0.8 : 1,
+    opacity: isDragging ? 0 : 1,
     height: "100%",
-    cursor: "grab",
+    cursor: isDragging ? "grabbing" : "grab",
     position: "relative",
     zIndex: isDragging ? 9999 : "auto",
   };
