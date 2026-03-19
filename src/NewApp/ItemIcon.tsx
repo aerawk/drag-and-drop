@@ -2,7 +2,11 @@ import { useViewportSize } from "@mantine/hooks";
 import { Tooltip } from "@mantine/core";
 
 export function getScaledWidth(width: number, viewportWidth: number) {
-  if (viewportWidth < 640) {
+  if (viewportWidth < 400) {
+    return width * 0.65;
+  } else if (viewportWidth < 500) {
+    return width * 0.75;
+  } else if (viewportWidth < 640) {
     return width * 1;
   } else if (viewportWidth < 768) {
     return width * 1.25;

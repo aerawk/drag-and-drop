@@ -31,14 +31,14 @@ import { ItemIcon } from "./ItemIcon";
 export function NewApp() {
   const cards = Object.values(boardSizes).map((item) => (
     <Radio.Card
-      className="p-2 sm:p-3!"
+      className="p-2! sm:px-3! max-w-2xs h-40! min-w-52"
       radius="md"
       value={item.name}
       key={item.name}>
-      <Group wrap="nowrap" align="flex-start">
+      <Group wrap="nowrap" align="flex-start" className="h-full">
         <Radio.Indicator className="self-center" />
-        <div className="min-w-0">
-          <Text className="text-xs sm:text-sm md:text-base truncate">
+        <div className="min-w-0 flex flex-col gap-3">
+          <Text className="text-xs sm:text-sm md:text-base font-bold!">
             {item.name} - {item.price}
           </Text>
           <Text className="text-xs sm:text-sm text-gray-600">
@@ -240,7 +240,7 @@ export function NewApp() {
         className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
         <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Grid Drag & Drop</h2>
+            <h2 className="text-2xl font-bold">Groove Board Demo</h2>
             <Button variant="" size="sm" onClick={toggleDrawer}>
               {drawerOpened ? "Hide Panel" : "Show Panel"}
             </Button>
@@ -266,6 +266,55 @@ export function NewApp() {
               maxWidth={activeBoardSize.grooveWidth}
             />
           </div>
+          <div className="flex flex-1 justify-center">
+            {/* <Select
+              height={80}
+              label="Choose your board size"
+              description="Select between our small, medium, and large boards to fit your project needs!"
+              value={activeBoardSize.name}
+              onChange={(name) => {
+                const selected = boardSizes.find((b) => b.name === name);
+                if (selected) setActiveBoardSize(selected);
+              }}
+              data={boardSizes.map((b) => {
+                const maxRowWidth = Math.max(
+                  grid1Items.reduce((sum, i) => sum + i.width, 0),
+                  grid2Items.reduce((sum, i) => sum + i.width, 0),
+                  grid3Items.reduce((sum, i) => sum + i.width, 0),
+                );
+                const tooSmall = b.grooveWidth < maxRowWidth;
+                return {
+                  value: b.name,
+                  label: `${b.name} - ${b.description} - ${b.price}`,
+                  disabled: tooSmall,
+                };
+              })}
+              classNames={{
+                label: "text-sm md:text-base",
+                description: "text-xs md:text-sm",
+              }}
+            /> */}
+            <Radio.Group
+              value={activeBoardSize.name}
+              onChange={(name) => {
+                const selected = boardSizes.find((b) => b.name === name);
+                if (selected) setActiveBoardSize(selected);
+              }}
+              label="Choose your board size"
+              description="Select the board size that fits your needs"
+              className="py-8"
+              classNames={{
+                label: "text-xl! text-center w-full",
+                description: "text-lg! text-center",
+              }}>
+              <div className="py-4 gap-2 flex flex-col justify-center items-center sm:flex-row">
+                {cards}
+              </div>
+            </Radio.Group>
+          </div>
+          <div className="flex justify-center text-">
+            <h2 className="pt-8 text-2xl font-bold">Preview</h2>
+          </div>
         </div>
       </div>
       <DragOverlay dropAnimation={null}>
@@ -279,7 +328,7 @@ export function NewApp() {
         withOverlay={false}
         trapFocus={false}
         lockScroll={false}
-        size={"sm"}
+        size={"xs"}
         styles={{
           title: { fontWeight: 600 },
           content: {
@@ -323,7 +372,7 @@ export function NewApp() {
             }}>
             <div className="pt-md gap-xs">{cards}</div>
           </Radio.Group> */}
-          <div className="flex flex-1">
+          {/* <div className="flex flex-1">
             <Select
               height={80}
               label="Choose your board size"
@@ -333,16 +382,25 @@ export function NewApp() {
                 const selected = boardSizes.find((b) => b.name === name);
                 if (selected) setActiveBoardSize(selected);
               }}
-              data={boardSizes.map((b) => ({
-                value: b.name,
-                label: `${b.name} - ${b.description} - ${b.price}`,
-              }))}
+              data={boardSizes.map((b) => {
+                const maxRowWidth = Math.max(
+                  grid1Items.reduce((sum, i) => sum + i.width, 0),
+                  grid2Items.reduce((sum, i) => sum + i.width, 0),
+                  grid3Items.reduce((sum, i) => sum + i.width, 0),
+                );
+                const tooSmall = b.grooveWidth < maxRowWidth;
+                return {
+                  value: b.name,
+                  label: `${b.name} - ${b.description} - ${b.price}`,
+                  disabled: tooSmall,
+                };
+              })}
               classNames={{
                 label: "text-sm md:text-base",
                 description: "text-xs md:text-sm",
               }}
             />
-          </div>
+          </div> */}
         </div>
       </Drawer>
       <Modal
@@ -518,13 +576,13 @@ function AvailableItemsPool({
       style={style}
       className="border-2 border-dashed border-gray-300 rounded-lg p-3 md:p-4 transition-colors">
       <h3 className="font-bold mb-2 text-sm md:text-base">Available Items</h3>
-      <p className="text-xs text-gray-600 mb-2">
+      <p className="text-xs mb-2">
         Click an item to add it to a row, long-press for menu, or drag using the
         handle (⋮⋮) that appears on hover.
       </p>
       <div className="flex flex-wrap gap-2">
         {items.length === 0 ? (
-          <p className="text-gray-500 italic text-xs sm:text-sm">
+          <p className="italic text-xs sm:text-sm">
             No items yet. Click "Choose Pieces" to add items, or drag items here
             to return them.
           </p>
