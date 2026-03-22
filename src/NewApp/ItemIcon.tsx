@@ -28,7 +28,7 @@ export function ItemIcon({
   const { width: viewportWidth } = useViewportSize();
 
   return (
-    <Tooltip label={`${alt}, ${width}`} position="top" withArrow>
+    <Tooltip label={`${alt}, ${width}`} position="bottom" withArrow>
       <div
         style={{
           width: getScaledWidth(width, viewportWidth),

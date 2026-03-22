@@ -5,6 +5,10 @@ import {
   useDroppable,
   type DragStartEvent,
   pointerWithin,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import { useState } from "react";
 import { GridDroppable } from "./GridDroppable";
@@ -19,6 +23,7 @@ import {
   Menu,
   Drawer,
   Select,
+  Popover,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useState as useReactState, useRef, useEffect } from "react";
@@ -29,6 +34,14 @@ import { toKebabId, type IconRegistryEntry } from "./data/iconRegistry";
 import { ItemIcon } from "./ItemIcon";
 
 export function NewApp() {
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { distance: 8 },
+  });
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 5 },
+  });
+  const sensors = useSensors(mouseSensor, touchSensor);
+
   const cards = Object.values(boardSizes).map((item) => (
     <Radio.Card
       className="p-2! sm:px-3! max-w-2xs h-40! min-w-52"
@@ -155,6 +168,63 @@ export function NewApp() {
     return null;
   };
 
+  const handleMoveToRow = (
+    sourceGridId: string,
+    itemId: string,
+    targetGridId: string,
+  ) => {
+    const sourceItems = getGridItems(sourceGridId);
+    const item = sourceItems.find((i) => i.id === itemId);
+    if (!item) return;
+    const targetItems = getGridItems(targetGridId);
+    const usedWidth = targetItems.reduce((sum, i) => sum + i.width, 0);
+    const remainingWidth = activeBoardSize.grooveWidth - usedWidth;
+    if (item.width > remainingWidth) return;
+    setGridItems(
+      sourceGridId,
+      sourceItems.filter((i) => i.id !== itemId),
+    );
+    setGridItems(targetGridId, [...targetItems, item]);
+  };
+
+  const handleRemoveFromGrid = (gridId: string, itemId: string) => {
+    const items = getGridItems(gridId);
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+    setGridItems(
+      gridId,
+      items.filter((i) => i.id !== itemId),
+    );
+    setAvailableItems((prev) => [...prev, item]);
+  };
+
+  const handleMoveItem = (
+    gridId: string,
+    itemId: string,
+    direction: "left" | "right" | "start" | "end",
+  ) => {
+    const items = getGridItems(gridId);
+    const index = items.findIndex((i) => i.id === itemId);
+    if (index === -1) return;
+    let newIndex: number;
+    switch (direction) {
+      case "start":
+        newIndex = 0;
+        break;
+      case "end":
+        newIndex = items.length - 1;
+        break;
+      case "left":
+        newIndex = index - 1;
+        break;
+      case "right":
+        newIndex = index + 1;
+        break;
+    }
+    if (newIndex < 0 || newIndex >= items.length || newIndex === index) return;
+    setGridItems(gridId, arrayMove(items, index, newIndex));
+  };
+
   function handleDragStart(event: DragStartEvent) {
     const itemLocation = findItemLocation(event.active.id as string);
     if (itemLocation) {
@@ -230,8 +300,14 @@ export function NewApp() {
     }
   }
 
+  const getRemainingWidth = (gridId: string) => {
+    const items = getGridItems(gridId);
+    return activeBoardSize.grooveWidth - items.reduce((sum, i) => sum + i.width, 0);
+  };
+
   return (
     <DndContext
+      sensors={sensors}
       collisionDetection={pointerWithin}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}>
@@ -239,10 +315,14 @@ export function NewApp() {
         id="main-container"
         className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
         <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 relative">
             <h2 className="text-2xl font-bold">Groove Board Demo</h2>
-            <Button variant="" size="sm" onClick={toggleDrawer}>
-              {drawerOpened ? "Hide Panel" : "Show Panel"}
+            <Button
+              className="fixed! top-9 right-9 z-100"
+              variant={drawerOpened ? "" : "gradient"}
+              size="sm"
+              onClick={toggleDrawer}>
+              {drawerOpened ? "Hide Panel" : "Add Pieces"}
             </Button>
           </div>
 
@@ -252,18 +332,60 @@ export function NewApp() {
               title="Back Row"
               items={grid1Items}
               maxWidth={activeBoardSize.grooveWidth}
+              onMoveItem={(itemId, direction) =>
+                handleMoveItem("grid-1", itemId, direction)
+              }
+              onRemoveItem={(itemId) =>
+                handleRemoveFromGrid("grid-1", itemId)
+              }
+              onMoveToRow={(itemId, targetGridId) =>
+                handleMoveToRow("grid-1", itemId, targetGridId)
+              }
+              otherGrids={[
+                { id: "grid-2", title: "Middle Row", remainingWidth: getRemainingWidth("grid-2") },
+                { id: "grid-3", title: "Front Row", remainingWidth: getRemainingWidth("grid-3") },
+              ]}
+              isDragging={!!activeItem}
             />
             <GridDroppable
               id="grid-2"
               title="Middle Row"
               items={grid2Items}
               maxWidth={activeBoardSize.grooveWidth}
+              onMoveItem={(itemId, direction) =>
+                handleMoveItem("grid-2", itemId, direction)
+              }
+              onRemoveItem={(itemId) =>
+                handleRemoveFromGrid("grid-2", itemId)
+              }
+              onMoveToRow={(itemId, targetGridId) =>
+                handleMoveToRow("grid-2", itemId, targetGridId)
+              }
+              otherGrids={[
+                { id: "grid-1", title: "Back Row", remainingWidth: getRemainingWidth("grid-1") },
+                { id: "grid-3", title: "Front Row", remainingWidth: getRemainingWidth("grid-3") },
+              ]}
+              isDragging={!!activeItem}
             />
             <GridDroppable
               id="grid-3"
               title="Front Row"
               items={grid3Items}
               maxWidth={activeBoardSize.grooveWidth}
+              onMoveItem={(itemId, direction) =>
+                handleMoveItem("grid-3", itemId, direction)
+              }
+              onRemoveItem={(itemId) =>
+                handleRemoveFromGrid("grid-3", itemId)
+              }
+              onMoveToRow={(itemId, targetGridId) =>
+                handleMoveToRow("grid-3", itemId, targetGridId)
+              }
+              otherGrids={[
+                { id: "grid-1", title: "Back Row", remainingWidth: getRemainingWidth("grid-1") },
+                { id: "grid-2", title: "Middle Row", remainingWidth: getRemainingWidth("grid-2") },
+              ]}
+              isDragging={!!activeItem}
             />
           </div>
           <div className="flex flex-1 justify-center">
@@ -323,24 +445,46 @@ export function NewApp() {
       <Drawer
         opened={drawerOpened}
         onClose={closeDrawer}
-        title="Add Pieces and Select Your Board Size!"
+        // title="Add Pieces and Select Your Board Size!"
+        title={
+          <div className="flex items-center justify-between w-full">
+            {/* <h2>Add Pieces</h2> */}
+            <Button
+              variant="gradient"
+              onClick={open}
+              className="w-full sm:w-auto absolute! top-3 left-1/2 -translate-x-1/2! sm:static sm:translate-x-0">
+              Browse Pieces
+            </Button>
+          </div>
+        }
         position="bottom"
         withOverlay={false}
         trapFocus={false}
         lockScroll={false}
-        size={"xs"}
+        size={"sm"}
         styles={{
-          title: { fontWeight: 600 },
+          title: {
+            fontWeight: 600,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          },
           content: {
             borderTop: "1px solid #313131",
             boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.5)",
             backgroundColor: "#3c3c3c",
           },
+          body: {
+            paddingTop: "8px",
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100% - 60px)",
+          },
         }}
         radius="lg"
         shadow="xl">
-        <div className="flex flex-row space-x-4">
-          <div className="flex flex-col gap-4 flex-2">
+        <div className="flex flex-row space-x-4 flex-1">
+          <div className="flex flex-col gap-4 flex-1">
             <AvailableItemsPool
               items={availableItems}
               onRemove={removeItemFromAvailable}
@@ -350,12 +494,12 @@ export function NewApp() {
               grid3Items={grid3Items}
               activeBoardSize={activeBoardSize}
             />
-            <Button
+            {/* <Button
               variant="default"
               onClick={open}
               className="w-full sm:w-auto">
               Browse Pieces
-            </Button>
+            </Button> */}
           </div>
 
           {/* <Radio.Group
@@ -428,6 +572,7 @@ function ItemWithContextMenu({
   availableGrids: { id: string; title: string; hasSpace: boolean }[];
 }) {
   const [menuOpened, setMenuOpened] = useReactState(false);
+  const [popoverOpened, setPopoverOpened] = useReactState(false);
   const longPressTimer = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -447,14 +592,6 @@ function ItemWithContextMenu({
     }
   };
 
-  const handleItemClick = (e: React.MouseEvent) => {
-    // Don't open menu if clicking the remove button
-    if ((e.target as HTMLElement).closest("button[data-remove]")) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setMenuOpened(true);
-  };
-
   useEffect(() => {
     return () => {
       if (longPressTimer.current) {
@@ -466,60 +603,86 @@ function ItemWithContextMenu({
   const gridsWithSpace = availableGrids.filter((g) => g.hasSpace);
 
   return (
-    <Menu
-      opened={menuOpened}
-      onChange={setMenuOpened}
-      position="bottom-start"
-      withArrow>
-      <Menu.Target>
-        <div
-          ref={containerRef}
-          className="relative w-24 sm:w-28 md:w-32 aspect-square group"
-          onTouchStart={handleLongPressStart}
-          onTouchEnd={handleLongPressEnd}
-          onTouchCancel={handleLongPressEnd}>
-          <GridItem
-            {...item}
-            svgSrc={item.svgSrc}
-            key={item.id}
-            useDragHandle={true}
-            onItemClick={handleItemClick}
-          />
-
-          {/* Remove button */}
-          <button
-            data-remove
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onRemove(item.id);
-            }}
-            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            title="Remove item">
-            ×
-          </button>
+    <Popover
+      opened={popoverOpened}
+      onChange={setPopoverOpened}
+      position="top"
+      withArrow
+      shadow="md">
+      <Popover.Target>
+        <div>
+          <Menu
+            opened={menuOpened}
+            onChange={setMenuOpened}
+            position="bottom-start"
+            withArrow>
+            <Menu.Target>
+              <div
+                ref={containerRef}
+                className="relative w-24 sm:w-28 md:w-32 aspect-square group"
+                onTouchStart={handleLongPressStart}
+                onTouchEnd={handleLongPressEnd}
+                onTouchCancel={handleLongPressEnd}>
+                <GridItem
+                  {...item}
+                  svgSrc={item.svgSrc}
+                  key={item.id}
+                  useDragHandle={false}
+                />
+              </div>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {/* <Menu.Label>Add to row</Menu.Label> */}
+              {gridsWithSpace.length === 0 ? (
+                <Menu.Item disabled>
+                  No rows have enough space ({item.width}mm needed)
+                </Menu.Item>
+              ) : (
+                gridsWithSpace.map((grid) => (
+                  <Menu.Item
+                    key={grid.id}
+                    onClick={() => {
+                      onAddToGrid(grid.id, item);
+                      setMenuOpened(false);
+                    }}>
+                    Add to {grid.title}
+                  </Menu.Item>
+                ))
+              )}
+              <Menu.Divider />
+              <Menu.Item
+                onClick={() => {
+                  setMenuOpened(false);
+                  setPopoverOpened((o) => !o);
+                }}>
+                View Item Details
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item
+                classNames={{ itemLabel: "text-center" }}
+                color="red"
+                onClick={() => {
+                  onRemove(item.id);
+                  setMenuOpened(false);
+                }}>
+                Remove
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </div>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Label>Add to row</Menu.Label>
-        {gridsWithSpace.length === 0 ? (
-          <Menu.Item disabled>
-            No rows have enough space ({item.width}mm needed)
-          </Menu.Item>
-        ) : (
-          gridsWithSpace.map((grid) => (
-            <Menu.Item
-              key={grid.id}
-              onClick={() => {
-                onAddToGrid(grid.id, item);
-                setMenuOpened(false);
-              }}>
-              {grid.title}
-            </Menu.Item>
-          ))
-        )}
-      </Menu.Dropdown>
-    </Menu>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Text fw={600} size="sm">
+          {item.text}
+        </Text>
+        <Text size="xs" c="dimmed">
+          Width: {item.width}mm
+        </Text>
+        <Text size="xs" c="dimmed">
+          ID: {item.id}
+        </Text>
+      </Popover.Dropdown>
+    </Popover>
   );
 }
 
@@ -545,8 +708,7 @@ function AvailableItemsPool({
   });
 
   const style = {
-    backgroundColor: isOver ? "#f0fdf4" : undefined,
-    borderColor: isOver ? "#22c55e" : undefined,
+    backgroundColor: isOver ? "#404040" : undefined,
     height: "fit-content",
     maxHeight: "400px",
     overflow: "auto",
@@ -574,17 +736,16 @@ function AvailableItemsPool({
     <div
       ref={setNodeRef}
       style={style}
-      className="border-2 border-dashed border-gray-300 rounded-lg p-3 md:p-4 transition-colors">
+      className="flex-1 bg-neutral-800 text-white rounded-lg p-3 md:p-4 transition-colors">
       <h3 className="font-bold mb-2 text-sm md:text-base">Available Items</h3>
       <p className="text-xs mb-2">
-        Click an item to add it to a row, long-press for menu, or drag using the
-        handle (⋮⋮) that appears on hover.
+        Click an item to add it to a row, or drag it directly to a board row.
       </p>
       <div className="flex flex-wrap gap-2">
         {items.length === 0 ? (
           <p className="italic text-xs sm:text-sm">
-            No items yet. Click "Choose Pieces" to add items, or drag items here
-            to return them.
+            No items yet. Click the "Browse Pieces" button above to find your
+            perfect pieces!
           </p>
         ) : (
           items.map((item) => (

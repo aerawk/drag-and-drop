@@ -4,14 +4,28 @@ import { SortableGridItem } from "./SortableGridItem";
 import type { GridItemData } from "./GridItem";
 import { useViewportSize } from "@mantine/hooks";
 import { getScaledWidth } from "./ItemIcon";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Menu } from "@mantine/core";
+
+interface TargetGrid {
+  id: string;
+  title: string;
+  remainingWidth: number;
+}
 
 interface GridDroppableProps {
   id: string;
   title: string;
   items: GridItemData[];
   maxWidth: number;
+  onMoveItem: (
+    itemId: string,
+    direction: "left" | "right" | "start" | "end",
+  ) => void;
+  onRemoveItem: (itemId: string) => void;
+  onMoveToRow: (itemId: string, targetGridId: string) => void;
+  otherGrids: TargetGrid[];
+  isDragging?: boolean;
 }
 
 export function GridDroppable({
@@ -19,14 +33,32 @@ export function GridDroppable({
   title,
   items,
   maxWidth,
+  onMoveItem,
+  onRemoveItem,
+  onMoveToRow,
+  otherGrids,
+  isDragging: isDraggingGlobal = false,
 }: GridDroppableProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: id,
   });
   const { width: viewportWidth } = useViewportSize();
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [justifyItems, setJustifyItems] = useState<
     "start" | "center" | "end" | "space-evenly" | "space-between"
   >("start");
+
+  // Close menu when drag starts
+  if (isDraggingGlobal && openMenuId !== null) {
+    setOpenMenuId(null);
+  }
+
+  const closeAndDo = (fn: () => void) => {
+    setOpenMenuId(null);
+    // Defer the action so the menu state clears before the re-render from the action
+    requestAnimationFrame(() => fn());
+  };
+
   const usedWidth = items.reduce((sum, item) => sum + item.width, 0);
   const remainingWidth = maxWidth - usedWidth;
 
@@ -40,11 +72,11 @@ export function GridDroppable({
   const dropAreaStyle = {
     backgroundColor: isOver ? "#4a4a4aa2" : "transparent",
     borderColor: isOver ? "##997547" : "transparent",
-    // padding: "0 8px",
-    height: "fit-content",
+    padding: "0 60px",
+    height: "100%",
     minHeight: "100px",
     bottom: "-8px",
-    width: `${getScaledWidth(maxWidth, viewportWidth)}px`,
+    width: `${getScaledWidth(maxWidth, viewportWidth) + 120}px`,
   };
 
   return (
@@ -63,15 +95,124 @@ export function GridDroppable({
               width: "100%",
               justifyContent: justifyItems,
             }}>
-            {items.map((item) => (
-              <div
+            {items.map((item, index) => (
+              <Menu
                 key={item.id}
-                className="mx-0.5 relative w-fit"
-                style={{
-                  width: `${Math.round(getScaledWidth(item.width, viewportWidth))}px`,
-                }}>
-                <SortableGridItem {...item} />
-              </div>
+                position="bottom"
+                withArrow
+                shadow="md"
+                opened={openMenuId === item.id}
+                onChange={(opened) => setOpenMenuId(opened ? item.id : null)}>
+                <Menu.Target>
+                  <div
+                    className="mx-0.5 relative w-fit cursor-pointer"
+                    style={{
+                      width: `${Math.round(getScaledWidth(item.width, viewportWidth))}px`,
+                    }}>
+                    <SortableGridItem {...item} />
+                  </div>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    disabled={index === 0}
+                    onClick={() => closeAndDo(() => onMoveItem(item.id, "start"))}
+                    leftSection={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path d="M11 17l-5-5 5-5" />
+                        <path d="M18 17l-5-5 5-5" />
+                      </svg>
+                    }>
+                    Move to Start
+                  </Menu.Item>
+                  <Menu.Item
+                    disabled={index === 0}
+                    onClick={() => closeAndDo(() => onMoveItem(item.id, "left"))}
+                    leftSection={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    }>
+                    Move Left
+                  </Menu.Item>
+                  <Menu.Item
+                    disabled={index === items.length - 1}
+                    onClick={() => closeAndDo(() => onMoveItem(item.id, "right"))}
+                    leftSection={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    }>
+                    Move Right
+                  </Menu.Item>
+                  <Menu.Item
+                    disabled={index === items.length - 1}
+                    onClick={() => closeAndDo(() => onMoveItem(item.id, "end"))}
+                    leftSection={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path d="M6 17l5-5-5-5" />
+                        <path d="M13 17l5-5-5-5" />
+                      </svg>
+                    }>
+                    Move to End
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Label>Move to row</Menu.Label>
+                  {otherGrids.map((grid) => {
+                    const hasSpace = item.width <= grid.remainingWidth;
+                    return (
+                      <Menu.Item
+                        key={grid.id}
+                        disabled={!hasSpace}
+                        onClick={() => closeAndDo(() => onMoveToRow(item.id, grid.id))}>
+                        {grid.title}
+                      </Menu.Item>
+                    );
+                  })}
+                  <Menu.Divider />
+                  <Menu.Item
+                    color="red"
+                    classNames={{ itemLabel: "text-center" }}
+                    onClick={() => closeAndDo(() => onRemoveItem(item.id))}>
+                    Remove
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
             ))}
           </div>
         </SortableContext>
