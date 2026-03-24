@@ -61,7 +61,7 @@ export function BoardPreview({
       className="w-full max-w-2xl mx-auto flex-1 flex flex-col">
       {containerWidth > 0 && (
         <div
-          className="relative mx-auto flex-1 flex flex-col justify-center"
+          className="relative mx-auto flex-1 flex flex-col justify-end"
           style={{
             width: boardSize.boardWidth * pxPerMm,
           }}>
@@ -77,7 +77,9 @@ export function BoardPreview({
                   position: "relative",
                   height: boardDepthPx,
                   backgroundColor: "#ae8856",
+                  filter: "drop-shadow(2px -6px 1px #7c603c)",
                   borderRadius: 2,
+                  top: "2px",
                 }}
               />
 
@@ -110,7 +112,7 @@ export function BoardPreview({
                           height: "auto",
                           minHeight: " 20px",
                           display: "block",
-                          filter: `drop-shadow(0px -${2 + (2 - i)}px ${4 + (2 - i)}px rgba(0,0,0,${0.4 + (2 - i) * 0.06}))`,
+                          filter: `drop-shadow(1px -3px 0px #7c603c) drop-shadow(0px -${2 + (2 - i)}px ${4 + (2 - i)}px rgba(0,0,0,${0.4 + (2 - i) * 0.06})) saturate(0.95) sepia(0.1)`,
                         }}
                       />
                     ))}

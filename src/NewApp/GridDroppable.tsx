@@ -6,6 +6,7 @@ import { useViewportSize } from "@mantine/hooks";
 import { getScaledWidth } from "./ItemIcon";
 import { useState } from "react";
 import { Button, Menu, Tooltip } from "@mantine/core";
+import type { BoardType } from "./types/types";
 
 export type JustifyValue =
   | "start"
@@ -127,7 +128,7 @@ interface GridDroppableProps {
   id: string;
   title: string;
   items: GridItemData[];
-  maxWidth: number;
+  activeBoardSize: BoardType;
   onMoveItem: (
     itemId: string,
     direction: "left" | "right" | "start" | "end",
@@ -144,7 +145,7 @@ export function GridDroppable({
   id,
   title,
   items,
-  maxWidth,
+  activeBoardSize,
   onMoveItem,
   onRemoveItem,
   onMoveToRow,
@@ -170,6 +171,7 @@ export function GridDroppable({
     requestAnimationFrame(() => fn());
   };
 
+  const maxWidth = activeBoardSize.grooveWidth;
   const usedWidth = items.reduce((sum, item) => sum + item.width, 0);
   const remainingWidth = maxWidth - usedWidth;
 
@@ -178,6 +180,7 @@ export function GridDroppable({
     borderColor: isOver ? "##997547" : "#ae8856",
     width: `${getScaledWidth(maxWidth, viewportWidth)}px`,
     boxShadow: "12px 0px #ae8856,  -12px 0px #ae8856",
+    filter: "drop-shadow(1px -3px 0px #7c603c)",
   };
 
   const dropAreaStyle = {
@@ -192,7 +195,6 @@ export function GridDroppable({
 
   return (
     <div className="flex flex-col gap-2 flex-1 min-w-0 w-full relative items-center">
-      {/* <h3 className="font-bold text-base md:text-lg">{title}</h3> */}
       <div
         ref={setNodeRef}
         style={dropAreaStyle}

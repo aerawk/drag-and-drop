@@ -26,7 +26,7 @@ import {
   Popover,
   Tooltip,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { useState as useReactState, useRef, useEffect } from "react";
 import { boardSizes } from "./data/boards";
 import type { BoardType } from "./types/types";
@@ -35,6 +35,7 @@ import { toKebabId, type IconRegistryEntry } from "./data/iconRegistry";
 import { ItemIcon } from "./ItemIcon";
 import { BoardPreview } from "./BoardPreview";
 import type { JustifyValue } from "./GridDroppable";
+import { useAutoHideHeader } from "./useAutoHideHeader";
 
 export function NewApp() {
   const mouseSensor = useSensor(MouseSensor, {
@@ -44,26 +45,8 @@ export function NewApp() {
     activationConstraint: { delay: 200, tolerance: 5 },
   });
   const sensors = useSensors(mouseSensor, touchSensor);
-
-  const cards = Object.values(boardSizes).map((item) => (
-    <Radio.Card
-      className="p-2! sm:px-3! max-w-2xs h-40! min-w-52"
-      radius="md"
-      value={item.name}
-      key={item.name}>
-      <Group wrap="nowrap" align="flex-start" className="h-full">
-        <Radio.Indicator className="self-center" />
-        <div className="min-w-0 flex flex-col gap-3">
-          <Text className="text-xs sm:text-sm md:text-base font-bold!">
-            {item.name} - {item.price}
-          </Text>
-          <Text className="text-xs sm:text-sm text-gray-600">
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </Radio.Card>
-  ));
+  const headerVisible = useAutoHideHeader();
+  const isCompact = useMediaQuery("(max-width: 650px)");
 
   const [activeBoardSize, setActiveBoardSize] = useState<BoardType>(
     boardSizes[1],
@@ -83,9 +66,9 @@ export function NewApp() {
   const [activeItem, setActiveItem] = useState<GridItemData | null>(null);
   const itemCounterRef = useRef(0);
 
-  const [justify1, setJustify1] = useState<JustifyValue>("start");
-  const [justify2, setJustify2] = useState<JustifyValue>("start");
-  const [justify3, setJustify3] = useState<JustifyValue>("start");
+  const [justify1, setJustify1] = useState<JustifyValue>("center");
+  const [justify2, setJustify2] = useState<JustifyValue>("center");
+  const [justify3, setJustify3] = useState<JustifyValue>("center");
 
   type PreviewData = {
     grid1: GridItemData[];
@@ -346,127 +329,221 @@ export function NewApp() {
       collisionDetection={pointerWithin}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}>
-      <div
-        id="main-container"
-        className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
-        <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-4 relative">
-            <h2 className="text-2xl font-bold">Groove Board</h2>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-neutral-900 transition-transform duration-300 ${headerVisible ? "translate-y-0" : "-translate-y-full"}`}>
+        <h2 className="text-2xl font-bold">Groove Board</h2>
+        <div className="flex items-center gap-2">
+          <Popover position="bottom" withArrow shadow="md">
+            <Popover.Target>
+              <Tooltip label="Choose Board" disabled={!isCompact}>
+                <Button variant="subtle" size="sm">
+                  {isCompact ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <line x1="7" y1="8" x2="17" y2="8" />
+                      <line x1="7" y1="12" x2="17" y2="12" />
+                      <line x1="7" y1="16" x2="17" y2="16" />
+                    </svg>
+                  ) : (
+                    "Choose Board"
+                  )}
+                </Button>
+              </Tooltip>
+            </Popover.Target>
+            <Popover.Dropdown w={"350px"}>
+              <div className="flex flex-col items-center gap-2">
+                <Text size="sm" fw={600}>
+                  Choose Your Board Size
+                </Text>
+                <div className="flex items-center gap-1">
+                  {boardSizes.map((board) => {
+                    const maxRowWidth = Math.max(
+                      grid1Items.reduce((sum, i) => sum + i.width, 0),
+                      grid2Items.reduce((sum, i) => sum + i.width, 0),
+                      grid3Items.reduce((sum, i) => sum + i.width, 0),
+                    );
+                    const tooSmall = board.grooveWidth < maxRowWidth;
+                    const isActive = activeBoardSize.name === board.name;
+                    return (
+                      <Tooltip
+                        key={board.name}
+                        label={
+                          tooSmall
+                            ? `Your current items exceed the width of this board.`
+                            : `${board.label} — ${board.price}`
+                        }
+                        position="top"
+                        openDelay={250}
+                        withArrow>
+                        <div className="flex flex-col items-center">
+                          <Button
+                            type="button"
+                            disabled={tooSmall}
+                            onClick={() => setActiveBoardSize(board)}
+                            className="p-0 rounded transition-colors"
+                            style={{
+                              backgroundColor: isActive
+                                ? "#ffffff30"
+                                : "transparent",
+                              color: isActive ? "#fff" : "#9ca3af",
+                            }}>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="32"
+                              height="22"
+                              viewBox="0 0 32 20"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round">
+                              {board.size === "small" && (
+                                <>
+                                  <rect
+                                    x="8"
+                                    y="3"
+                                    width="16"
+                                    height="14"
+                                    rx="1.5"
+                                  />
+                                  <line x1="11" y1="7" x2="21" y2="7" />
+                                  <line x1="11" y1="10" x2="21" y2="10" />
+                                  <line x1="11" y1="13" x2="21" y2="13" />
+                                </>
+                              )}
+                              {board.size === "medium" && (
+                                <>
+                                  <rect
+                                    x="5"
+                                    y="2"
+                                    width="22"
+                                    height="16"
+                                    rx="1.5"
+                                  />
+                                  <line x1="8" y1="6.5" x2="24" y2="6.5" />
+                                  <line x1="8" y1="10" x2="24" y2="10" />
+                                  <line x1="8" y1="13.5" x2="24" y2="13.5" />
+                                </>
+                              )}
+                              {board.size === "large" && (
+                                <>
+                                  <rect
+                                    x="2"
+                                    y="1"
+                                    width="28"
+                                    height="18"
+                                    rx="1.5"
+                                  />
+                                  <line x1="5" y1="6" x2="27" y2="6" />
+                                  <line x1="5" y1="10" x2="27" y2="10" />
+                                  <line x1="5" y1="14" x2="27" y2="14" />
+                                </>
+                              )}
+                            </svg>
+                          </Button>
+                          <span className="text-md font-semibold mt-1 h-3.5">
+                            {isActive ? board.name : ""}
+                          </span>
+                        </div>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-sm">{activeBoardSize.description}</span>
+                  <span className="text-xs text-neutral-400">
+                    {activeBoardSize.price}
+                  </span>
+                </div>
+              </div>
+            </Popover.Dropdown>
+          </Popover>
+          <Tooltip
+            label={drawerOpened ? "Hide Panel" : "Add Pieces"}
+            disabled={!isCompact}>
             <Button
-              className="fixed! top-9 right-9 z-100"
               variant={drawerOpened ? "" : "gradient"}
               size="sm"
               onClick={toggleDrawer}>
-              {drawerOpened ? "Hide Panel" : "Add Pieces"}
+              {isCompact ? (
+                drawerOpened ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round">
+                    <path d="M5 12h14" />
+                    <path d="m12 5-7 7 7 7" />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round">
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                  </svg>
+                )
+              ) : drawerOpened ? (
+                "Hide Panel"
+              ) : (
+                "Add Pieces"
+              )}
             </Button>
-          </div>
-          <div className="flex flex-col items-center gap-2 pt-6">
-            <Text size="lg" fw={600}>
-              Choose Your Board Size
-            </Text>
-            <div className="flex items-center gap-1">
-              {boardSizes.map((board) => {
-                const maxRowWidth = Math.max(
-                  grid1Items.reduce((sum, i) => sum + i.width, 0),
-                  grid2Items.reduce((sum, i) => sum + i.width, 0),
-                  grid3Items.reduce((sum, i) => sum + i.width, 0),
-                );
-                const tooSmall = board.grooveWidth < maxRowWidth;
-                const isActive = activeBoardSize.name === board.name;
-                return (
-                  <Tooltip
-                    key={board.name}
-                    label={`${board.label} — ${board.price}`}
-                    position="top"
-                    openDelay={250}
-                    withArrow>
-                    <div className="flex flex-col items-center">
-                      <Button
-                        type="button"
-                        disabled={tooSmall}
-                        onClick={() => setActiveBoardSize(board)}
-                        className="p-0 rounded transition-colors"
-                        style={{
-                          backgroundColor: isActive
-                            ? "#ffffff30"
-                            : "transparent",
-                          color: isActive ? "#fff" : "#9ca3af",
-                        }}>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="32"
-                          height="22"
-                          viewBox="0 0 32 20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round">
-                          {board.size === "small" && (
-                            <>
-                              <rect
-                                x="8"
-                                y="3"
-                                width="16"
-                                height="14"
-                                rx="1.5"
-                              />
-                              <line x1="11" y1="7" x2="21" y2="7" />
-                              <line x1="11" y1="10" x2="21" y2="10" />
-                              <line x1="11" y1="13" x2="21" y2="13" />
-                            </>
-                          )}
-                          {board.size === "medium" && (
-                            <>
-                              <rect
-                                x="5"
-                                y="2"
-                                width="22"
-                                height="16"
-                                rx="1.5"
-                              />
-                              <line x1="8" y1="6.5" x2="24" y2="6.5" />
-                              <line x1="8" y1="10" x2="24" y2="10" />
-                              <line x1="8" y1="13.5" x2="24" y2="13.5" />
-                            </>
-                          )}
-                          {board.size === "large" && (
-                            <>
-                              <rect
-                                x="2"
-                                y="1"
-                                width="28"
-                                height="18"
-                                rx="1.5"
-                              />
-                              <line x1="5" y1="6" x2="27" y2="6" />
-                              <line x1="5" y1="10" x2="27" y2="10" />
-                              <line x1="5" y1="14" x2="27" y2="14" />
-                            </>
-                          )}
-                        </svg>
-                      </Button>
-                      <span className="text-md font-semibold mt-1 h-3.5">
-                        {isActive ? board.name : ""}
-                      </span>
-                    </div>
-                  </Tooltip>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-col items-center gap-1 pt-4">
-              <span className="text-lg">{activeBoardSize.description}</span>
-              <span>{activeBoardSize.price}</span>
-            </div>
-          </div>
-
-          <div id="grid-container" className="flex flex-col gap-4">
+          </Tooltip>
+          <Tooltip label="Generate Preview" disabled={!isCompact}>
+            <Button variant="gradient" size="sm" onClick={generatePreview}>
+              {isCompact ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              ) : (
+                "Generate Preview"
+              )}
+            </Button>
+          </Tooltip>
+        </div>
+      </header>
+      <div
+        id="main-container"
+        className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden pt-14">
+        <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
+          <div id="grid-container" className="flex flex-col gap-4 pt-6">
             <GridDroppable
               id="grid-1"
               title="Back Row"
               items={grid1Items}
-              maxWidth={activeBoardSize.grooveWidth}
+              activeBoardSize={activeBoardSize}
               onMoveItem={(itemId, direction) =>
                 handleMoveItem("grid-1", itemId, direction)
               }
@@ -494,7 +571,7 @@ export function NewApp() {
               id="grid-2"
               title="Middle Row"
               items={grid2Items}
-              maxWidth={activeBoardSize.grooveWidth}
+              activeBoardSize={activeBoardSize}
               onMoveItem={(itemId, direction) =>
                 handleMoveItem("grid-2", itemId, direction)
               }
@@ -522,7 +599,7 @@ export function NewApp() {
               id="grid-3"
               title="Front Row"
               items={grid3Items}
-              maxWidth={activeBoardSize.grooveWidth}
+              activeBoardSize={activeBoardSize}
               onMoveItem={(itemId, direction) =>
                 handleMoveItem("grid-3", itemId, direction)
               }
@@ -547,12 +624,6 @@ export function NewApp() {
               onJustifyChange={setJustify3}
             />
           </div>
-
-          <div className="flex flex-col items-center pt-8 gap-4">
-            <Button variant="gradient" onClick={generatePreview}>
-              Generate Preview
-            </Button>
-          </div>
         </div>
       </div>
       <DragOverlay dropAnimation={null}>
@@ -561,7 +632,6 @@ export function NewApp() {
       <Drawer
         opened={drawerOpened}
         onClose={closeDrawer}
-        // title="Add Pieces and Select Your Board Size!"
         title={
           <div className="flex items-center justify-between w-full">
             {/* <h2>Add Pieces</h2> */}
@@ -610,57 +680,7 @@ export function NewApp() {
               grid3Items={grid3Items}
               activeBoardSize={activeBoardSize}
             />
-            {/* <Button
-              variant="default"
-              onClick={open}
-              className="w-full sm:w-auto">
-              Browse Pieces
-            </Button> */}
           </div>
-
-          {/* <Radio.Group
-            value={activeBoardSize.name}
-            onChange={(name) => {
-              const selected = boardSizes.find((b) => b.name === name);
-              if (selected) setActiveBoardSize(selected);
-            }}
-            label="Choose your board size"
-            description="Select the board size that fits your needs"
-            classNames={{
-              label: "text-sm md:text-base",
-              description: "text-xs md:text-sm",
-            }}>
-            <div className="pt-md gap-xs">{cards}</div>
-          </Radio.Group> */}
-          {/* <div className="flex flex-1">
-            <Select
-              height={80}
-              label="Choose your board size"
-              description="Select between our small, medium, and large boards to fit your project needs!"
-              value={activeBoardSize.name}
-              onChange={(name) => {
-                const selected = boardSizes.find((b) => b.name === name);
-                if (selected) setActiveBoardSize(selected);
-              }}
-              data={boardSizes.map((b) => {
-                const maxRowWidth = Math.max(
-                  grid1Items.reduce((sum, i) => sum + i.width, 0),
-                  grid2Items.reduce((sum, i) => sum + i.width, 0),
-                  grid3Items.reduce((sum, i) => sum + i.width, 0),
-                );
-                const tooSmall = b.grooveWidth < maxRowWidth;
-                return {
-                  value: b.name,
-                  label: `${b.name} - ${b.description} - ${b.price}`,
-                  disabled: tooSmall,
-                };
-              })}
-              classNames={{
-                label: "text-sm md:text-base",
-                description: "text-xs md:text-sm",
-              }}
-            />
-          </div> */}
         </div>
       </Drawer>
       <Modal
@@ -681,7 +701,8 @@ export function NewApp() {
         size="xl"
         styles={{
           content: {
-            height: "calc(100vh - 2rem)",
+            height: "75vh",
+            maxHeight: "700px",
             display: "flex",
             flexDirection: "column",
           },
