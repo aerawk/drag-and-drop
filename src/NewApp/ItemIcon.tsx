@@ -33,7 +33,7 @@ export function ItemIcon({
         style={{
           width: getScaledWidth(width, viewportWidth),
           padding: "0 2px",
-          filter: "drop-shadow(1px -3px 0px #7c603c) saturate(0.95) sepia(0.1)",
+          filter: `drop-shadow(1px -${getScaledWidth(1.5, viewportWidth)}px 0px #7c603c) saturate(0.95) sepia(0.1)`,
         }}>
         <img src={src} alt={alt} width="100%" />
       </div>

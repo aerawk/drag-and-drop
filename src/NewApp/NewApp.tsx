@@ -47,6 +47,7 @@ export function NewApp() {
   const sensors = useSensors(mouseSensor, touchSensor);
   const headerVisible = useAutoHideHeader();
   const isCompact = useMediaQuery("(max-width: 650px)");
+  const isNarrow = useMediaQuery("(max-width: 500px)");
 
   const [activeBoardSize, setActiveBoardSize] = useState<BoardType>(
     boardSizes[1],
@@ -331,12 +332,12 @@ export function NewApp() {
       onDragEnd={handleDragEnd}>
       <header
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-neutral-900 transition-transform duration-300 ${headerVisible ? "translate-y-0" : "-translate-y-full"}`}>
-        <h2 className="text-2xl font-bold">Groove Board</h2>
+        <h2 className={`${isNarrow ? "text-lg" : "text-2xl"} font-bold`}>Groove Board</h2>
         <div className="flex items-center gap-2">
           <Popover position="bottom" withArrow shadow="md">
             <Popover.Target>
               <Tooltip label="Choose Board" disabled={!isCompact}>
-                <Button variant="subtle" size="sm">
+                <Button variant="subtle" size={isNarrow ? "xs" : "sm"}>
                   {isCompact ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -472,7 +473,7 @@ export function NewApp() {
             disabled={!isCompact}>
             <Button
               variant={drawerOpened ? "" : "gradient"}
-              size="sm"
+              size={isNarrow ? "xs" : "sm"}
               onClick={toggleDrawer}>
               {isCompact ? (
                 drawerOpened ? (
@@ -512,7 +513,7 @@ export function NewApp() {
             </Button>
           </Tooltip>
           <Tooltip label="Generate Preview" disabled={!isCompact}>
-            <Button variant="gradient" size="sm" onClick={generatePreview}>
+            <Button variant="gradient" size={isNarrow ? "xs" : "sm"} onClick={generatePreview}>
               {isCompact ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -536,7 +537,7 @@ export function NewApp() {
       </header>
       <div
         id="main-container"
-        className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden pt-14">
+        className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden sm:pt-10 md:pt-12 lg:pt-16">
         <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
           <div id="grid-container" className="flex flex-col gap-4 pt-6">
             <GridDroppable

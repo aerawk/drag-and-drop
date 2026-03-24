@@ -2,6 +2,8 @@ import { useRef, useState, useEffect } from "react";
 import type { GridItemData } from "./GridItem";
 import type { BoardType } from "./types/types";
 import type { JustifyValue } from "./GridDroppable";
+import { getScaledWidth } from "./ItemIcon";
+import { useViewportSize } from "@mantine/hooks";
 
 interface BoardPreviewProps {
   grid1Items: GridItemData[];
@@ -27,6 +29,7 @@ export function BoardPreview({
 }: BoardPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const { width: viewportWidth } = useViewportSize();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -77,9 +80,9 @@ export function BoardPreview({
                   position: "relative",
                   height: boardDepthPx,
                   backgroundColor: "#ae8856",
-                  filter: "drop-shadow(2px -6px 1px #7c603c)",
+                  filter: `drop-shadow(2px -${getScaledWidth(3, viewportWidth)}px 1px #7c603c)`,
                   borderRadius: 2,
-                  top: "2px",
+                  top: "-8px",
                 }}
               />
 
@@ -112,7 +115,7 @@ export function BoardPreview({
                           height: "auto",
                           minHeight: " 20px",
                           display: "block",
-                          filter: `drop-shadow(1px -3px 0px #7c603c) drop-shadow(0px -${2 + (2 - i)}px ${4 + (2 - i)}px rgba(0,0,0,${0.4 + (2 - i) * 0.06})) saturate(0.95) sepia(0.1)`,
+                          filter: `drop-shadow(1px -${getScaledWidth(1.5, viewportWidth)}px 0px #7c603c) drop-shadow(0px -${2 + (2 - i)}px ${4 + (2 - i)}px rgba(0,0,0,${0.4 + (2 - i) * 0.06})) saturate(0.95) sepia(0.1)`,
                         }}
                       />
                     ))}

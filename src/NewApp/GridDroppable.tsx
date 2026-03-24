@@ -180,7 +180,8 @@ export function GridDroppable({
     borderColor: isOver ? "##997547" : "#ae8856",
     width: `${getScaledWidth(maxWidth, viewportWidth)}px`,
     boxShadow: "12px 0px #ae8856,  -12px 0px #ae8856",
-    filter: "drop-shadow(1px -3px 0px #7c603c)",
+    filter: `drop-shadow(1px -${getScaledWidth(1.5, viewportWidth)}px 0px #7c603c)`,
+    height: `${getScaledWidth(12, viewportWidth)}px`,
   };
 
   const dropAreaStyle = {
@@ -340,7 +341,8 @@ export function GridDroppable({
       </div>
       <div
         style={style}
-        className={`border-2 border-dashed border-t-0 rounded-sm sm:rounded-md md:rounded-lg p-2 sm:p-3 md:p-4 h-4 sm:h-6 md:h-8 transition-colors overflow-x-auto overflow-y-visible z-50`}></div>
+        className={`
+        rounded-xs sm:rounded-sm transition-colors overflow-x-auto overflow-y-visible z-50`}></div>
       <h3 className="font-bold text-base md:text-lg">{title}</h3>
       <div className="mb-2 text-xs sm:text-sm text-gray-300">
         Capacity: {usedWidth}/{maxWidth} units (
