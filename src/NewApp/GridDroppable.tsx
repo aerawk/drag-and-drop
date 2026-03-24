@@ -5,7 +5,117 @@ import type { GridItemData } from "./GridItem";
 import { useViewportSize } from "@mantine/hooks";
 import { getScaledWidth } from "./ItemIcon";
 import { useState } from "react";
-import { Menu } from "@mantine/core";
+import { Button, Menu, Tooltip } from "@mantine/core";
+
+export type JustifyValue =
+  | "start"
+  | "center"
+  | "end"
+  | "space-evenly"
+  | "space-between";
+
+const AlignOptions: {
+  value: JustifyValue;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    value: "start",
+    label: "Align items to the left",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 20 16"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round">
+        <line x1="1" y1="12" x2="19" y2="12" />
+        <circle cx="2" cy="7" r="1.5" stroke="none" />
+        <circle cx="6" cy="7" r="1.5" stroke="none" />
+      </svg>
+    ),
+  },
+
+  {
+    value: "space-evenly",
+    label: "Space items evenly",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 20 16"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round">
+        <line x1="1" y1="12" x2="19" y2="12" />
+        <circle cx="6" cy="7" r="1.5" stroke="none" />
+        <circle cx="14" cy="7" r="1.5" stroke="none" />
+      </svg>
+    ),
+  },
+  {
+    value: "center",
+    label: "Center items",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 20 16"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round">
+        <line x1="1" y1="12" x2="19" y2="12" />
+        <circle cx="8" cy="7" r="1.5" stroke="none" />
+        <circle cx="12" cy="7" r="1.5" stroke="none" />
+      </svg>
+    ),
+  },
+  {
+    value: "space-between",
+    label: "Space items apart",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 20 16"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round">
+        <line x1="1" y1="12" x2="19" y2="12" />
+        <circle cx="2" cy="7" r="1.5" stroke="none" />
+        <circle cx="18" cy="7" r="1.5" stroke="none" />
+      </svg>
+    ),
+  },
+  {
+    value: "end",
+    label: "Align items to the right",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 20 16"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round">
+        <line x1="1" y1="12" x2="19" y2="12" />
+        <circle cx="14" cy="7" r="1.5" stroke="none" />
+        <circle cx="18" cy="7" r="1.5" stroke="none" />
+      </svg>
+    ),
+  },
+];
 
 interface TargetGrid {
   id: string;
@@ -26,6 +136,8 @@ interface GridDroppableProps {
   onMoveToRow: (itemId: string, targetGridId: string) => void;
   otherGrids: TargetGrid[];
   isDragging?: boolean;
+  justifyItems: JustifyValue;
+  onJustifyChange: (value: JustifyValue) => void;
 }
 
 export function GridDroppable({
@@ -38,15 +150,14 @@ export function GridDroppable({
   onMoveToRow,
   otherGrids,
   isDragging: isDraggingGlobal = false,
+  justifyItems,
+  onJustifyChange,
 }: GridDroppableProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: id,
   });
   const { width: viewportWidth } = useViewportSize();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [justifyItems, setJustifyItems] = useState<
-    "start" | "center" | "end" | "space-evenly" | "space-between"
-  >("start");
 
   // Close menu when drag starts
   if (isDraggingGlobal && openMenuId !== null) {
@@ -115,7 +226,9 @@ export function GridDroppable({
                 <Menu.Dropdown>
                   <Menu.Item
                     disabled={index === 0}
-                    onClick={() => closeAndDo(() => onMoveItem(item.id, "start"))}
+                    onClick={() =>
+                      closeAndDo(() => onMoveItem(item.id, "start"))
+                    }
                     leftSection={
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +248,9 @@ export function GridDroppable({
                   </Menu.Item>
                   <Menu.Item
                     disabled={index === 0}
-                    onClick={() => closeAndDo(() => onMoveItem(item.id, "left"))}
+                    onClick={() =>
+                      closeAndDo(() => onMoveItem(item.id, "left"))
+                    }
                     leftSection={
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +269,9 @@ export function GridDroppable({
                   </Menu.Item>
                   <Menu.Item
                     disabled={index === items.length - 1}
-                    onClick={() => closeAndDo(() => onMoveItem(item.id, "right"))}
+                    onClick={() =>
+                      closeAndDo(() => onMoveItem(item.id, "right"))
+                    }
                     leftSection={
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -199,7 +316,9 @@ export function GridDroppable({
                       <Menu.Item
                         key={grid.id}
                         disabled={!hasSpace}
-                        onClick={() => closeAndDo(() => onMoveToRow(item.id, grid.id))}>
+                        onClick={() =>
+                          closeAndDo(() => onMoveToRow(item.id, grid.id))
+                        }>
                         {grid.title}
                       </Menu.Item>
                     );
@@ -231,42 +350,29 @@ export function GridDroppable({
         </span>
         )
       </div>
-      <Menu position="bottom" withArrow>
-        <Menu.Target>
-          <span
-            id="adjust-layout"
-            className="text-xs sm:text-sm text-gray-300 cursor-pointer flex items-center gap-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            Adjust Layout
-          </span>
-        </Menu.Target>
-        <Menu.Dropdown>
-          <Menu.Label>Justify items</Menu.Label>
-          <Menu.Item onClick={() => setJustifyItems("start")}>Left</Menu.Item>
-          <Menu.Item onClick={() => setJustifyItems("center")}>
-            Center
-          </Menu.Item>
-          <Menu.Item onClick={() => setJustifyItems("end")}>Right</Menu.Item>
-          <Menu.Item onClick={() => setJustifyItems("space-evenly")}>
-            Space Evenly
-          </Menu.Item>
-          <Menu.Item onClick={() => setJustifyItems("space-between")}>
-            Space Between
-          </Menu.Item>
-        </Menu.Dropdown>
-      </Menu>
+      <span className="text-xs sm:text-sm text-gray-300">Item Layout:</span>
+      <div className="flex items-center gap-1">
+        {AlignOptions.map((opt) => (
+          <Tooltip
+            label={opt.label}
+            key={opt.value}
+            position="bottom"
+            withArrow>
+            <Button
+              key={opt.value}
+              type="button"
+              onClick={() => onJustifyChange(opt.value)}
+              className="p-0 rounded transition-colors"
+              style={{
+                backgroundColor:
+                  justifyItems === opt.value ? "#ffffff30" : "transparent",
+                color: justifyItems === opt.value ? "#fff" : "#9ca3af",
+              }}>
+              {opt.icon}
+            </Button>
+          </Tooltip>
+        ))}
+      </div>
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   Drawer,
   Select,
   Popover,
+  Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useState as useReactState, useRef, useEffect } from "react";
@@ -32,6 +33,8 @@ import type { BoardType } from "./types/types";
 import { ItemPicker } from "./ItemPicker";
 import { toKebabId, type IconRegistryEntry } from "./data/iconRegistry";
 import { ItemIcon } from "./ItemIcon";
+import { BoardPreview } from "./BoardPreview";
+import type { JustifyValue } from "./GridDroppable";
 
 export function NewApp() {
   const mouseSensor = useSensor(MouseSensor, {
@@ -69,6 +72,8 @@ export function NewApp() {
   const [availableItems, setAvailableItems] = useState<GridItemData[]>([]);
 
   const [opened, { open, close }] = useDisclosure(false);
+  const [previewOpened, { open: openPreview, close: closePreview }] =
+    useDisclosure(false);
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(true);
 
@@ -77,6 +82,34 @@ export function NewApp() {
   const [grid3Items, setGrid3Items] = useState<GridItemData[]>([]);
   const [activeItem, setActiveItem] = useState<GridItemData | null>(null);
   const itemCounterRef = useRef(0);
+
+  const [justify1, setJustify1] = useState<JustifyValue>("start");
+  const [justify2, setJustify2] = useState<JustifyValue>("start");
+  const [justify3, setJustify3] = useState<JustifyValue>("start");
+
+  type PreviewData = {
+    grid1: GridItemData[];
+    grid2: GridItemData[];
+    grid3: GridItemData[];
+    boardSize: BoardType;
+    justify1: JustifyValue;
+    justify2: JustifyValue;
+    justify3: JustifyValue;
+  };
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
+
+  const generatePreview = () => {
+    setPreviewData({
+      grid1: [...grid1Items],
+      grid2: [...grid2Items],
+      grid3: [...grid3Items],
+      boardSize: activeBoardSize,
+      justify1,
+      justify2,
+      justify3,
+    });
+    openPreview();
+  };
 
   const handleAddItems = (selectedEntries: IconRegistryEntry[]) => {
     const newItems: GridItemData[] = selectedEntries.map((entry) => {
@@ -302,7 +335,9 @@ export function NewApp() {
 
   const getRemainingWidth = (gridId: string) => {
     const items = getGridItems(gridId);
-    return activeBoardSize.grooveWidth - items.reduce((sum, i) => sum + i.width, 0);
+    return (
+      activeBoardSize.grooveWidth - items.reduce((sum, i) => sum + i.width, 0)
+    );
   };
 
   return (
@@ -316,7 +351,7 @@ export function NewApp() {
         className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
         <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
           <div className="flex items-center justify-between mb-4 relative">
-            <h2 className="text-2xl font-bold">Groove Board Demo</h2>
+            <h2 className="text-2xl font-bold">Groove Board</h2>
             <Button
               className="fixed! top-9 right-9 z-100"
               variant={drawerOpened ? "" : "gradient"}
@@ -324,6 +359,106 @@ export function NewApp() {
               onClick={toggleDrawer}>
               {drawerOpened ? "Hide Panel" : "Add Pieces"}
             </Button>
+          </div>
+          <div className="flex flex-col items-center gap-2 pt-6">
+            <Text size="lg" fw={600}>
+              Choose Your Board Size
+            </Text>
+            <div className="flex items-center gap-1">
+              {boardSizes.map((board) => {
+                const maxRowWidth = Math.max(
+                  grid1Items.reduce((sum, i) => sum + i.width, 0),
+                  grid2Items.reduce((sum, i) => sum + i.width, 0),
+                  grid3Items.reduce((sum, i) => sum + i.width, 0),
+                );
+                const tooSmall = board.grooveWidth < maxRowWidth;
+                const isActive = activeBoardSize.name === board.name;
+                return (
+                  <Tooltip
+                    key={board.name}
+                    label={`${board.label} — ${board.price}`}
+                    position="top"
+                    openDelay={250}
+                    withArrow>
+                    <div className="flex flex-col items-center">
+                      <Button
+                        type="button"
+                        disabled={tooSmall}
+                        onClick={() => setActiveBoardSize(board)}
+                        className="p-0 rounded transition-colors"
+                        style={{
+                          backgroundColor: isActive
+                            ? "#ffffff30"
+                            : "transparent",
+                          color: isActive ? "#fff" : "#9ca3af",
+                        }}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="32"
+                          height="22"
+                          viewBox="0 0 32 20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round">
+                          {board.size === "small" && (
+                            <>
+                              <rect
+                                x="8"
+                                y="3"
+                                width="16"
+                                height="14"
+                                rx="1.5"
+                              />
+                              <line x1="11" y1="7" x2="21" y2="7" />
+                              <line x1="11" y1="10" x2="21" y2="10" />
+                              <line x1="11" y1="13" x2="21" y2="13" />
+                            </>
+                          )}
+                          {board.size === "medium" && (
+                            <>
+                              <rect
+                                x="5"
+                                y="2"
+                                width="22"
+                                height="16"
+                                rx="1.5"
+                              />
+                              <line x1="8" y1="6.5" x2="24" y2="6.5" />
+                              <line x1="8" y1="10" x2="24" y2="10" />
+                              <line x1="8" y1="13.5" x2="24" y2="13.5" />
+                            </>
+                          )}
+                          {board.size === "large" && (
+                            <>
+                              <rect
+                                x="2"
+                                y="1"
+                                width="28"
+                                height="18"
+                                rx="1.5"
+                              />
+                              <line x1="5" y1="6" x2="27" y2="6" />
+                              <line x1="5" y1="10" x2="27" y2="10" />
+                              <line x1="5" y1="14" x2="27" y2="14" />
+                            </>
+                          )}
+                        </svg>
+                      </Button>
+                      <span className="text-md font-semibold mt-1 h-3.5">
+                        {isActive ? board.name : ""}
+                      </span>
+                    </div>
+                  </Tooltip>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col items-center gap-1 pt-4">
+              <span className="text-lg">{activeBoardSize.description}</span>
+              <span>{activeBoardSize.price}</span>
+            </div>
           </div>
 
           <div id="grid-container" className="flex flex-col gap-4">
@@ -335,17 +470,25 @@ export function NewApp() {
               onMoveItem={(itemId, direction) =>
                 handleMoveItem("grid-1", itemId, direction)
               }
-              onRemoveItem={(itemId) =>
-                handleRemoveFromGrid("grid-1", itemId)
-              }
+              onRemoveItem={(itemId) => handleRemoveFromGrid("grid-1", itemId)}
               onMoveToRow={(itemId, targetGridId) =>
                 handleMoveToRow("grid-1", itemId, targetGridId)
               }
               otherGrids={[
-                { id: "grid-2", title: "Middle Row", remainingWidth: getRemainingWidth("grid-2") },
-                { id: "grid-3", title: "Front Row", remainingWidth: getRemainingWidth("grid-3") },
+                {
+                  id: "grid-2",
+                  title: "Middle Row",
+                  remainingWidth: getRemainingWidth("grid-2"),
+                },
+                {
+                  id: "grid-3",
+                  title: "Front Row",
+                  remainingWidth: getRemainingWidth("grid-3"),
+                },
               ]}
               isDragging={!!activeItem}
+              justifyItems={justify1}
+              onJustifyChange={setJustify1}
             />
             <GridDroppable
               id="grid-2"
@@ -355,17 +498,25 @@ export function NewApp() {
               onMoveItem={(itemId, direction) =>
                 handleMoveItem("grid-2", itemId, direction)
               }
-              onRemoveItem={(itemId) =>
-                handleRemoveFromGrid("grid-2", itemId)
-              }
+              onRemoveItem={(itemId) => handleRemoveFromGrid("grid-2", itemId)}
               onMoveToRow={(itemId, targetGridId) =>
                 handleMoveToRow("grid-2", itemId, targetGridId)
               }
               otherGrids={[
-                { id: "grid-1", title: "Back Row", remainingWidth: getRemainingWidth("grid-1") },
-                { id: "grid-3", title: "Front Row", remainingWidth: getRemainingWidth("grid-3") },
+                {
+                  id: "grid-1",
+                  title: "Back Row",
+                  remainingWidth: getRemainingWidth("grid-1"),
+                },
+                {
+                  id: "grid-3",
+                  title: "Front Row",
+                  remainingWidth: getRemainingWidth("grid-3"),
+                },
               ]}
               isDragging={!!activeItem}
+              justifyItems={justify2}
+              onJustifyChange={setJustify2}
             />
             <GridDroppable
               id="grid-3"
@@ -375,67 +526,32 @@ export function NewApp() {
               onMoveItem={(itemId, direction) =>
                 handleMoveItem("grid-3", itemId, direction)
               }
-              onRemoveItem={(itemId) =>
-                handleRemoveFromGrid("grid-3", itemId)
-              }
+              onRemoveItem={(itemId) => handleRemoveFromGrid("grid-3", itemId)}
               onMoveToRow={(itemId, targetGridId) =>
                 handleMoveToRow("grid-3", itemId, targetGridId)
               }
               otherGrids={[
-                { id: "grid-1", title: "Back Row", remainingWidth: getRemainingWidth("grid-1") },
-                { id: "grid-2", title: "Middle Row", remainingWidth: getRemainingWidth("grid-2") },
+                {
+                  id: "grid-1",
+                  title: "Back Row",
+                  remainingWidth: getRemainingWidth("grid-1"),
+                },
+                {
+                  id: "grid-2",
+                  title: "Middle Row",
+                  remainingWidth: getRemainingWidth("grid-2"),
+                },
               ]}
               isDragging={!!activeItem}
+              justifyItems={justify3}
+              onJustifyChange={setJustify3}
             />
           </div>
-          <div className="flex flex-1 justify-center">
-            {/* <Select
-              height={80}
-              label="Choose your board size"
-              description="Select between our small, medium, and large boards to fit your project needs!"
-              value={activeBoardSize.name}
-              onChange={(name) => {
-                const selected = boardSizes.find((b) => b.name === name);
-                if (selected) setActiveBoardSize(selected);
-              }}
-              data={boardSizes.map((b) => {
-                const maxRowWidth = Math.max(
-                  grid1Items.reduce((sum, i) => sum + i.width, 0),
-                  grid2Items.reduce((sum, i) => sum + i.width, 0),
-                  grid3Items.reduce((sum, i) => sum + i.width, 0),
-                );
-                const tooSmall = b.grooveWidth < maxRowWidth;
-                return {
-                  value: b.name,
-                  label: `${b.name} - ${b.description} - ${b.price}`,
-                  disabled: tooSmall,
-                };
-              })}
-              classNames={{
-                label: "text-sm md:text-base",
-                description: "text-xs md:text-sm",
-              }}
-            /> */}
-            <Radio.Group
-              value={activeBoardSize.name}
-              onChange={(name) => {
-                const selected = boardSizes.find((b) => b.name === name);
-                if (selected) setActiveBoardSize(selected);
-              }}
-              label="Choose your board size"
-              description="Select the board size that fits your needs"
-              className="py-8"
-              classNames={{
-                label: "text-xl! text-center w-full",
-                description: "text-lg! text-center",
-              }}>
-              <div className="py-4 gap-2 flex flex-col justify-center items-center sm:flex-row">
-                {cards}
-              </div>
-            </Radio.Group>
-          </div>
-          <div className="flex justify-center text-">
-            <h2 className="pt-8 text-2xl font-bold">Preview</h2>
+
+          <div className="flex flex-col items-center pt-8 gap-4">
+            <Button variant="gradient" onClick={generatePreview}>
+              Generate Preview
+            </Button>
           </div>
         </div>
       </div>
@@ -555,6 +671,33 @@ export function NewApp() {
         centered
         size="lg">
         <ItemPicker onAddItems={handleAddItems} />
+      </Modal>
+      <Modal
+        id="preview-modal"
+        opened={previewOpened}
+        onClose={closePreview}
+        title="Board Preview"
+        centered
+        size="xl"
+        styles={{
+          content: {
+            height: "calc(100vh - 2rem)",
+            display: "flex",
+            flexDirection: "column",
+          },
+          body: { flex: 1, display: "flex", flexDirection: "column" },
+        }}>
+        {previewData && (
+          <BoardPreview
+            grid1Items={previewData.grid1}
+            grid2Items={previewData.grid2}
+            grid3Items={previewData.grid3}
+            boardSize={previewData.boardSize}
+            justify1={previewData.justify1}
+            justify2={previewData.justify2}
+            justify3={previewData.justify3}
+          />
+        )}
       </Modal>
     </DndContext>
   );
