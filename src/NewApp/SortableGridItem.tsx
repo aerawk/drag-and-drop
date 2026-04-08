@@ -2,14 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { GridItemData } from "./GridItem";
 
-export function SortableGridItem({
-  id,
-  text,
-  width,
-  backgroundImage,
-  svgSrc,
-  icon,
-}: GridItemData) {
+export function SortableGridItem({ id, width, icon }: GridItemData) {
   const {
     attributes,
     listeners,

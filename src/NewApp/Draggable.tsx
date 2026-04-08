@@ -4,7 +4,6 @@ import { CSS } from "@dnd-kit/utilities";
 export function Draggable({
   id,
   text,
-  props,
 }: {
   id: string;
   text: string;

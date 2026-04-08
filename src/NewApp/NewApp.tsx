@@ -814,12 +814,7 @@ function ItemWithContextMenu({
                 onTouchStart={handleLongPressStart}
                 onTouchEnd={handleLongPressEnd}
                 onTouchCancel={handleLongPressEnd}>
-                <GridItem
-                  {...item}
-                  svgSrc={item.svgSrc}
-                  key={item.id}
-                  useDragHandle={false}
-                />
+                <GridItem {...item} svgSrc={item.svgSrc} key={item.id} />
               </div>
             </Menu.Target>
             <Menu.Dropdown>
