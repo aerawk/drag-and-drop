@@ -57,7 +57,6 @@ export * from "./MarkerGreenIcon";
 export * from "./MarkerPinkIcon";
 export * from "./MathIcon";
 export * from "./MessageBubbleIcon";
-export * from "./MountainIcon";
 export * from "./NotebookPaperIcon";
 export * from "./NotebookPurpleIcon";
 export * from "./NotebookRedIcon";

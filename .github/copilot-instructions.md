@@ -47,7 +47,7 @@ const [availableItems, setAvailableItems] = useState<GridItemData[]>([]);
 
 // Active board configuration
 const [activeBoardSize, setActiveBoardSize] = useState<BoardType>(
-  boardSizes[1]
+  boardSizes[1],
 );
 ```
 
@@ -112,9 +112,9 @@ const [activeBoardSize, setActiveBoardSize] = useState<BoardType>(
 
 ### Icon System (In Transition)
 
-- **Current**: Individual SVG icon components in `src/NewApp/icons/` (e.g., `MountainIcon.tsx`) with size prop
+- **Current**: Individual SVG icon components in `src/NewApp/icons/` (e.g., `AppleIcon.tsx`) with size prop
 - **Future Direction**: Consolidate into a flexible `Icon` component accepting `size` and `imageSource` props to simplify implementation
-- Pattern to follow: `<Icon size="small" | "medium" | "large" source="mountain" />`
+- Pattern to follow: `<Icon size="small" | "medium" | "large" source="apple" />`
 
 ## Common Tasks
 
