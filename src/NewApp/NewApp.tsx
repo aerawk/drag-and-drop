@@ -10,24 +10,20 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useState } from "react";
 import { GridDroppable } from "./GridDroppable";
 import { GridItem, type GridItemData } from "./GridItem";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
-  Radio,
-  Group,
   Text,
   Modal,
   Button,
   Menu,
   Drawer,
-  Select,
   Popover,
   Tooltip,
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
-import { useState as useReactState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { boardSizes } from "./data/boards";
 import type { BoardType } from "./types/types";
 import { ItemPicker } from "./ItemPicker";
@@ -332,13 +328,163 @@ export function NewApp() {
       onDragEnd={handleDragEnd}>
       <header
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-neutral-900 transition-transform duration-300 ${headerVisible ? "translate-y-0" : "-translate-y-full"}`}>
-        <h2 className={`${isNarrow ? "text-lg" : "text-2xl"} font-bold`}>Groove Board</h2>
+        <h2 className={`${isNarrow ? "text-lg" : "text-2xl"} font-bold`}>
+          Groove Board
+        </h2>
         <div className="flex items-center gap-2">
-          <Popover position="bottom" withArrow shadow="md">
-            <Popover.Target>
-              <Tooltip label="Choose Board" disabled={!isCompact}>
-                <Button variant="subtle" size={isNarrow ? "xs" : "sm"}>
-                  {isCompact ? (
+          <div className="flex flex-col items-center gap-1">
+            <Popover position="bottom" withArrow shadow="md">
+              <Popover.Target>
+                <Tooltip label="Choose Board" disabled={!isCompact}>
+                  <Button variant="" size={isNarrow ? "xs" : "sm"}>
+                    {isCompact ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="32"
+                        height="22"
+                        viewBox="0 0 32 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <rect x="2" y="1" width="28" height="18" rx="1.5" />
+                        <line x1="5" y1="6" x2="27" y2="6" />
+                        <line x1="5" y1="10" x2="27" y2="10" />
+                        <line x1="5" y1="14" x2="27" y2="14" />
+                      </svg>
+                    ) : (
+                      "Choose Board"
+                    )}
+                  </Button>
+                </Tooltip>
+              </Popover.Target>
+              <Popover.Dropdown w={"350px"}>
+                <div className="flex flex-col items-center gap-2">
+                  <Text size="sm" fw={600}>
+                    Choose Your Board Size
+                  </Text>
+                  <div className="flex items-center gap-1">
+                    {boardSizes.map((board) => {
+                      const maxRowWidth = Math.max(
+                        grid1Items.reduce((sum, i) => sum + i.width, 0),
+                        grid2Items.reduce((sum, i) => sum + i.width, 0),
+                        grid3Items.reduce((sum, i) => sum + i.width, 0),
+                      );
+                      const tooSmall = board.grooveWidth < maxRowWidth;
+                      const isActive = activeBoardSize.name === board.name;
+                      return (
+                        <Tooltip
+                          key={board.name}
+                          label={
+                            tooSmall
+                              ? `Your current items exceed the width of this board.`
+                              : `${board.label} — ${board.price}`
+                          }
+                          position="top"
+                          openDelay={250}
+                          withArrow>
+                          <div className="flex flex-col items-center">
+                            <Button
+                              type="button"
+                              disabled={tooSmall}
+                              onClick={() => setActiveBoardSize(board)}
+                              className="p-0 rounded transition-colors"
+                              style={{
+                                backgroundColor: isActive
+                                  ? "#ffffff30"
+                                  : "transparent",
+                                color: isActive ? "#fff" : "#9ca3af",
+                              }}>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="32"
+                                height="22"
+                                viewBox="0 0 32 20"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round">
+                                {board.size === "small" && (
+                                  <>
+                                    <rect
+                                      x="8"
+                                      y="3"
+                                      width="16"
+                                      height="14"
+                                      rx="1.5"
+                                    />
+                                    <line x1="11" y1="7" x2="21" y2="7" />
+                                    <line x1="11" y1="10" x2="21" y2="10" />
+                                    <line x1="11" y1="13" x2="21" y2="13" />
+                                  </>
+                                )}
+                                {board.size === "medium" && (
+                                  <>
+                                    <rect
+                                      x="5"
+                                      y="2"
+                                      width="22"
+                                      height="16"
+                                      rx="1.5"
+                                    />
+                                    <line x1="8" y1="6.5" x2="24" y2="6.5" />
+                                    <line x1="8" y1="10" x2="24" y2="10" />
+                                    <line x1="8" y1="13.5" x2="24" y2="13.5" />
+                                  </>
+                                )}
+                                {board.size === "large" && (
+                                  <>
+                                    <rect
+                                      x="2"
+                                      y="1"
+                                      width="28"
+                                      height="18"
+                                      rx="1.5"
+                                    />
+                                    <line x1="5" y1="6" x2="27" y2="6" />
+                                    <line x1="5" y1="10" x2="27" y2="10" />
+                                    <line x1="5" y1="14" x2="27" y2="14" />
+                                  </>
+                                )}
+                              </svg>
+                            </Button>
+                            <span className="text-md font-semibold mt-1 h-3.5">
+                              {isActive ? board.name : ""}
+                            </span>
+                          </div>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-sm">
+                      {activeBoardSize.description}
+                    </span>
+                    <span className="text-xs text-neutral-400">
+                      {activeBoardSize.price}
+                    </span>
+                  </div>
+                </div>
+              </Popover.Dropdown>
+            </Popover>
+            {isCompact && (
+              <span className="text-[10px] text-neutral-400 font-semibold">
+                Board
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Tooltip
+              label={drawerOpened ? "Hide Panel" : "Add Pieces"}
+              disabled={!isCompact}>
+              <Button
+                variant={drawerOpened ? "" : "gradient"}
+                size={isNarrow ? "xs" : "sm"}
+                onClick={toggleDrawer}>
+                {isCompact ? (
+                  drawerOpened ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -349,134 +495,44 @@ export function NewApp() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <line x1="7" y1="8" x2="17" y2="8" />
-                      <line x1="7" y1="12" x2="17" y2="12" />
-                      <line x1="7" y1="16" x2="17" y2="16" />
+                      <path d="M5 12h14" />
+                      <path d="m12 5-7 7 7 7" />
                     </svg>
                   ) : (
-                    "Choose Board"
-                  )}
-                </Button>
-              </Tooltip>
-            </Popover.Target>
-            <Popover.Dropdown w={"350px"}>
-              <div className="flex flex-col items-center gap-2">
-                <Text size="sm" fw={600}>
-                  Choose Your Board Size
-                </Text>
-                <div className="flex items-center gap-1">
-                  {boardSizes.map((board) => {
-                    const maxRowWidth = Math.max(
-                      grid1Items.reduce((sum, i) => sum + i.width, 0),
-                      grid2Items.reduce((sum, i) => sum + i.width, 0),
-                      grid3Items.reduce((sum, i) => sum + i.width, 0),
-                    );
-                    const tooSmall = board.grooveWidth < maxRowWidth;
-                    const isActive = activeBoardSize.name === board.name;
-                    return (
-                      <Tooltip
-                        key={board.name}
-                        label={
-                          tooSmall
-                            ? `Your current items exceed the width of this board.`
-                            : `${board.label} — ${board.price}`
-                        }
-                        position="top"
-                        openDelay={250}
-                        withArrow>
-                        <div className="flex flex-col items-center">
-                          <Button
-                            type="button"
-                            disabled={tooSmall}
-                            onClick={() => setActiveBoardSize(board)}
-                            className="p-0 rounded transition-colors"
-                            style={{
-                              backgroundColor: isActive
-                                ? "#ffffff30"
-                                : "transparent",
-                              color: isActive ? "#fff" : "#9ca3af",
-                            }}>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="32"
-                              height="22"
-                              viewBox="0 0 32 20"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round">
-                              {board.size === "small" && (
-                                <>
-                                  <rect
-                                    x="8"
-                                    y="3"
-                                    width="16"
-                                    height="14"
-                                    rx="1.5"
-                                  />
-                                  <line x1="11" y1="7" x2="21" y2="7" />
-                                  <line x1="11" y1="10" x2="21" y2="10" />
-                                  <line x1="11" y1="13" x2="21" y2="13" />
-                                </>
-                              )}
-                              {board.size === "medium" && (
-                                <>
-                                  <rect
-                                    x="5"
-                                    y="2"
-                                    width="22"
-                                    height="16"
-                                    rx="1.5"
-                                  />
-                                  <line x1="8" y1="6.5" x2="24" y2="6.5" />
-                                  <line x1="8" y1="10" x2="24" y2="10" />
-                                  <line x1="8" y1="13.5" x2="24" y2="13.5" />
-                                </>
-                              )}
-                              {board.size === "large" && (
-                                <>
-                                  <rect
-                                    x="2"
-                                    y="1"
-                                    width="28"
-                                    height="18"
-                                    rx="1.5"
-                                  />
-                                  <line x1="5" y1="6" x2="27" y2="6" />
-                                  <line x1="5" y1="10" x2="27" y2="10" />
-                                  <line x1="5" y1="14" x2="27" y2="14" />
-                                </>
-                              )}
-                            </svg>
-                          </Button>
-                          <span className="text-md font-semibold mt-1 h-3.5">
-                            {isActive ? board.name : ""}
-                          </span>
-                        </div>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-sm">{activeBoardSize.description}</span>
-                  <span className="text-xs text-neutral-400">
-                    {activeBoardSize.price}
-                  </span>
-                </div>
-              </div>
-            </Popover.Dropdown>
-          </Popover>
-          <Tooltip
-            label={drawerOpened ? "Hide Panel" : "Add Pieces"}
-            disabled={!isCompact}>
-            <Button
-              variant={drawerOpened ? "" : "gradient"}
-              size={isNarrow ? "xs" : "sm"}
-              onClick={toggleDrawer}>
-              {isCompact ? (
-                drawerOpened ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round">
+                      <path d="M12 5v14" />
+                      <path d="M5 12h14" />
+                    </svg>
+                  )
+                ) : drawerOpened ? (
+                  "Hide Panel"
+                ) : (
+                  "Add Pieces"
+                )}
+              </Button>
+            </Tooltip>
+            {isCompact && (
+              <span className="text-[10px] text-neutral-400 font-semibold">
+                Pieces
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Tooltip label="Generate Preview" disabled={!isCompact}>
+              <Button
+                variant="gradient"
+                size={isNarrow ? "xs" : "sm"}
+                onClick={generatePreview}>
+                {isCompact ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -487,52 +543,20 @@ export function NewApp() {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5-7 7 7 7" />
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
                   </svg>
                 ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round">
-                    <path d="M12 5v14" />
-                    <path d="M5 12h14" />
-                  </svg>
-                )
-              ) : drawerOpened ? (
-                "Hide Panel"
-              ) : (
-                "Add Pieces"
-              )}
-            </Button>
-          </Tooltip>
-          <Tooltip label="Generate Preview" disabled={!isCompact}>
-            <Button variant="gradient" size={isNarrow ? "xs" : "sm"} onClick={generatePreview}>
-              {isCompact ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              ) : (
-                "Generate Preview"
-              )}
-            </Button>
-          </Tooltip>
+                  "Generate Preview"
+                )}
+              </Button>
+            </Tooltip>
+            {isCompact && (
+              <span className="text-[10px] text-neutral-400  font-semibold">
+                Preview
+              </span>
+            )}
+          </div>
         </div>
       </header>
       <div
@@ -690,7 +714,8 @@ export function NewApp() {
         onClose={close}
         title="Pick Your Pieces"
         centered
-        size="lg">
+        size="lg"
+        removeScrollProps={{ allowPinchZoom: true }}>
         <ItemPicker onAddItems={handleAddItems} />
       </Modal>
       <Modal
@@ -700,6 +725,7 @@ export function NewApp() {
         title="Board Preview"
         centered
         size="xl"
+        removeScrollProps={{ allowPinchZoom: true }}
         styles={{
           content: {
             height: "75vh",
@@ -736,8 +762,8 @@ function ItemWithContextMenu({
   onAddToGrid: (gridId: string, item: GridItemData) => void;
   availableGrids: { id: string; title: string; hasSpace: boolean }[];
 }) {
-  const [menuOpened, setMenuOpened] = useReactState(false);
-  const [popoverOpened, setPopoverOpened] = useReactState(false);
+  const [menuOpened, setMenuOpened] = useState(false);
+  const [popoverOpened, setPopoverOpened] = useState(false);
   const longPressTimer = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 

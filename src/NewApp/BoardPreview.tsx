@@ -16,7 +16,7 @@ interface BoardPreviewProps {
 }
 
 const BOARD_DEPTH_MM = 16;
-const ROW_OFFSET_MM = 5;
+const ROW_OFFSET_MM = 4;
 
 export function BoardPreview({
   grid1Items,
@@ -85,14 +85,26 @@ export function BoardPreview({
                   top: "-8px",
                 }}
               />
+              <div
+                style={{
+                  position: "absolute",
+                  height: boardDepthPx,
+                  width: "100%",
+                  backgroundColor: "#ae8856",
+                  borderRadius: 2,
+                  top: "-8px",
+                  zIndex: 100,
+                }}
+              />
 
               {/* Item rows — all absolute, anchored above the board strip */}
               {rows.map((row, i) => {
                 const scale = i === 0 ? 0.96 : i === 1 ? 0.98 : 1;
-                const bottomOffset = boardDepthPx + (2 - i) * rowOffsetPx;
+                const bottomOffset =
+                  boardDepthPx + (2 - (i + 1) * 0.5) * rowOffsetPx;
                 return (
                   <div
-                    key={i}
+                    key={row.label}
                     style={{
                       position: "absolute",
                       bottom: bottomOffset,
