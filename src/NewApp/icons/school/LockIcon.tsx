@@ -1,5 +1,5 @@
 import { ItemIcon } from "../../ItemIcon";
 
 export function LockIcon() {
-  return <ItemIcon src="/src/assets/Lock.svg" alt="Lock Icon" width={60} />;
+  return <ItemIcon src="/assets/Lock.svg" alt="Lock Icon" width={60} />;
 }

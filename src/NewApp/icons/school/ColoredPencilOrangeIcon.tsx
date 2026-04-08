@@ -3,7 +3,7 @@ import { ItemIcon } from "../../ItemIcon";
 export function ColoredPencilOrangeIcon() {
   return (
     <ItemIcon
-      src="/src/assets/ColoredPencilOrange.svg"
+      src="/assets/ColoredPencilOrange.svg"
       alt="ColoredPencilOrange Icon"
       width={15}
     />

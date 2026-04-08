@@ -1,5 +1,5 @@
 import { ItemIcon } from "../../ItemIcon";
 
 export function AbcIcon() {
-  return <ItemIcon src="/src/assets/Abc.svg" alt="Abc Icon" width={75} />;
+  return <ItemIcon src="/assets/Abc.svg" alt="Abc Icon" width={75} />;
 }

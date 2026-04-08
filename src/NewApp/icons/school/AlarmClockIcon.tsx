@@ -3,7 +3,7 @@ import { ItemIcon } from "../../ItemIcon";
 export function AlarmClockIcon() {
   return (
     <ItemIcon
-      src="/src/assets/Alarm Clock.svg"
+      src="/assets/Alarm Clock.svg"
       alt="Alarm Clock Icon"
       width={60}
     />
