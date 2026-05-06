@@ -51,10 +51,11 @@ export function NewApp() {
 
   const [availableItems, setAvailableItems] = useState<GridItemData[]>([]);
 
-  const [opened, { open, close }] = useDisclosure(false);
-  const [previewOpened, { open: openPreview, close: closePreview }] =
+  const [isItemPickerOpen, { open: openPicker, close: closePicker }] =
     useDisclosure(false);
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
+  const [isPreviewOpen, { open: openPreview, close: closePreview }] =
+    useDisclosure(false);
+  const [isDrawerOpen, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(true);
 
   const [grid1Items, setGrid1Items] = useState<GridItemData[]>([]);
@@ -477,14 +478,14 @@ export function NewApp() {
           </div>
           <div className="flex flex-col items-center gap-1">
             <Tooltip
-              label={drawerOpened ? "Hide Panel" : "Add Pieces"}
+              label={isDrawerOpen ? "Hide Panel" : "Add Pieces"}
               disabled={!isCompact}>
               <Button
-                variant={drawerOpened ? "" : "gradient"}
+                variant={isDrawerOpen ? "" : "gradient"}
                 size={isNarrow ? "xs" : "sm"}
                 onClick={toggleDrawer}>
                 {isCompact ? (
-                  drawerOpened ? (
+                  isDrawerOpen ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -513,7 +514,7 @@ export function NewApp() {
                       <path d="M5 12h14" />
                     </svg>
                   )
-                ) : drawerOpened ? (
+                ) : isDrawerOpen ? (
                   "Hide Panel"
                 ) : (
                   "Add Pieces"
@@ -562,7 +563,10 @@ export function NewApp() {
       <div
         id="main-container"
         className="flex flex-col w-full max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden sm:pt-10 md:pt-12 lg:pt-16">
-        <div id="title-and-grid" className="flex flex-col flex-1 min-w-0">
+        <div
+          id="title-and-grid"
+          className="flex flex-col flex-1 min-w-0"
+          style={{ paddingBottom: isDrawerOpen ? "400px" : "initial" }}>
           <div id="grid-container" className="flex flex-col gap-4 pt-6">
             <GridDroppable
               id="grid-1"
@@ -655,14 +659,14 @@ export function NewApp() {
         {activeItem ? activeItem.icon : null}
       </DragOverlay>
       <Drawer
-        opened={drawerOpened}
+        opened={isDrawerOpen}
         onClose={closeDrawer}
         title={
           <div className="flex items-center justify-between w-full">
             {/* <h2>Add Pieces</h2> */}
             <Button
               variant="gradient"
-              onClick={open}
+              onClick={openPicker}
               className="w-full sm:w-auto absolute! top-3 left-1/2 -translate-x-1/2! sm:static sm:translate-x-0">
               Browse Pieces
             </Button>
@@ -710,8 +714,8 @@ export function NewApp() {
       </Drawer>
       <Modal
         id="item-picker-modal"
-        opened={opened}
-        onClose={close}
+        opened={isItemPickerOpen}
+        onClose={closePicker}
         title="Pick Your Pieces"
         centered
         size="lg"
@@ -720,7 +724,7 @@ export function NewApp() {
       </Modal>
       <Modal
         id="preview-modal"
-        opened={previewOpened}
+        opened={isPreviewOpen}
         onClose={closePreview}
         title="Board Preview"
         centered

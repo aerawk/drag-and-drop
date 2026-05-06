@@ -111,9 +111,11 @@ export function BoardPreview({
             width: boardSize.boardWidth * pxPerMm,
           }}>
           {isEmpty ? (
-            <p className="text-center text-sm text-white/60 py-8">
-              Add items to your rows to see a preview.
-            </p>
+            <div className="h-full w-full flex items-center justify-center">
+              <p className="text-center text-md text-white/60 py-8">
+                Add some items to your board to see a preview!
+              </p>
+            </div>
           ) : (
             <>
               <div
