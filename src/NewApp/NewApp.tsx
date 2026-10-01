@@ -2,7 +2,6 @@ import {
   DndContext,
   DragOverlay,
   type DragEndEvent,
-  useDroppable,
   type DragStartEvent,
   pointerWithin,
   MouseSensor,
@@ -11,19 +10,18 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { GridDroppable } from "./GridDroppable";
-import { GridItem, type GridItemData } from "./GridItem";
+import type { GridItemData } from "./GridItem";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
   Text,
   Modal,
   Button,
-  Menu,
   Drawer,
   Popover,
   Tooltip,
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { boardSizes } from "./data/boards";
 import type { BoardType } from "./types/types";
 import { ItemPicker } from "./ItemPicker";
@@ -32,6 +30,9 @@ import { ItemIcon } from "./ItemIcon";
 import { BoardPreview } from "./BoardPreview";
 import type { JustifyValue } from "./GridDroppable";
 import { useAutoHideHeader } from "./useAutoHideHeader";
+import { AvailableItemsPool } from "./AvailableItemsPool";
+import { BoardSizeIcon } from "./icons/BoardSizeIcon";
+import { ChevronLeftIcon, PlusIcon, EyeIcon } from "./icons/UIIcons";
 
 export function NewApp() {
   const mouseSensor = useSensor(MouseSensor, {
@@ -338,25 +339,7 @@ export function NewApp() {
               <Popover.Target>
                 <Tooltip label="Choose Board" disabled={!isCompact}>
                   <Button variant="" size={isNarrow ? "xs" : "sm"}>
-                    {isCompact ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="32"
-                        height="22"
-                        viewBox="0 0 32 20"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round">
-                        <rect x="2" y="1" width="28" height="18" rx="1.5" />
-                        <line x1="5" y1="6" x2="27" y2="6" />
-                        <line x1="5" y1="10" x2="27" y2="10" />
-                        <line x1="5" y1="14" x2="27" y2="14" />
-                      </svg>
-                    ) : (
-                      "Choose Board"
-                    )}
+                    {isCompact ? <BoardSizeIcon size="large" /> : "Choose Board"}
                   </Button>
                 </Tooltip>
               </Popover.Target>
@@ -397,59 +380,7 @@ export function NewApp() {
                                   : "transparent",
                                 color: isActive ? "#fff" : "#9ca3af",
                               }}>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="32"
-                                height="22"
-                                viewBox="0 0 32 20"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round">
-                                {board.size === "small" && (
-                                  <>
-                                    <rect
-                                      x="8"
-                                      y="3"
-                                      width="16"
-                                      height="14"
-                                      rx="1.5"
-                                    />
-                                    <line x1="11" y1="7" x2="21" y2="7" />
-                                    <line x1="11" y1="10" x2="21" y2="10" />
-                                    <line x1="11" y1="13" x2="21" y2="13" />
-                                  </>
-                                )}
-                                {board.size === "medium" && (
-                                  <>
-                                    <rect
-                                      x="5"
-                                      y="2"
-                                      width="22"
-                                      height="16"
-                                      rx="1.5"
-                                    />
-                                    <line x1="8" y1="6.5" x2="24" y2="6.5" />
-                                    <line x1="8" y1="10" x2="24" y2="10" />
-                                    <line x1="8" y1="13.5" x2="24" y2="13.5" />
-                                  </>
-                                )}
-                                {board.size === "large" && (
-                                  <>
-                                    <rect
-                                      x="2"
-                                      y="1"
-                                      width="28"
-                                      height="18"
-                                      rx="1.5"
-                                    />
-                                    <line x1="5" y1="6" x2="27" y2="6" />
-                                    <line x1="5" y1="10" x2="27" y2="10" />
-                                    <line x1="5" y1="14" x2="27" y2="14" />
-                                  </>
-                                )}
-                              </svg>
+                              <BoardSizeIcon size={board.size} />
                             </Button>
                             <span className="text-md font-semibold mt-1 h-3.5">
                               {isActive ? board.name : ""}
@@ -486,33 +417,9 @@ export function NewApp() {
                 onClick={toggleDrawer}>
                 {isCompact ? (
                   isDrawerOpen ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round">
-                      <path d="M5 12h14" />
-                      <path d="m12 5-7 7 7 7" />
-                    </svg>
+                    <ChevronLeftIcon />
                   ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round">
-                      <path d="M12 5v14" />
-                      <path d="M5 12h14" />
-                    </svg>
+                    <PlusIcon />
                   )
                 ) : isDrawerOpen ? (
                   "Hide Panel"
@@ -533,23 +440,7 @@ export function NewApp() {
                 variant="gradient"
                 size={isNarrow ? "xs" : "sm"}
                 onClick={generatePreview}>
-                {isCompact ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                ) : (
-                  "Generate Preview"
-                )}
+                {isCompact ? <EyeIcon /> : "Generate Preview"}
               </Button>
             </Tooltip>
             {isCompact && (
@@ -752,203 +643,5 @@ export function NewApp() {
         )}
       </Modal>
     </DndContext>
-  );
-}
-
-function ItemWithContextMenu({
-  item,
-  onRemove,
-  onAddToGrid,
-  availableGrids,
-}: {
-  item: GridItemData;
-  onRemove: (itemId: string) => void;
-  onAddToGrid: (gridId: string, item: GridItemData) => void;
-  availableGrids: { id: string; title: string; hasSpace: boolean }[];
-}) {
-  const [menuOpened, setMenuOpened] = useState(false);
-  const [popoverOpened, setPopoverOpened] = useState(false);
-  const longPressTimer = useRef<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleLongPressStart = (e: React.TouchEvent) => {
-    // Only trigger long press on the GridItem itself, not the buttons
-    if ((e.target as HTMLElement).closest("button")) return;
-
-    longPressTimer.current = setTimeout(() => {
-      setMenuOpened(true);
-    }, 500); // 500ms for long press
-  };
-
-  const handleLongPressEnd = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-      }
-    };
-  }, []);
-
-  const gridsWithSpace = availableGrids.filter((g) => g.hasSpace);
-
-  return (
-    <Popover
-      opened={popoverOpened}
-      onChange={setPopoverOpened}
-      position="top"
-      withArrow
-      shadow="md">
-      <Popover.Target>
-        <div>
-          <Menu
-            opened={menuOpened}
-            onChange={setMenuOpened}
-            position="bottom-start"
-            withArrow>
-            <Menu.Target>
-              <div
-                ref={containerRef}
-                className="relative w-24 sm:w-28 md:w-32 aspect-square group"
-                onTouchStart={handleLongPressStart}
-                onTouchEnd={handleLongPressEnd}
-                onTouchCancel={handleLongPressEnd}>
-                <GridItem {...item} svgSrc={item.svgSrc} key={item.id} />
-              </div>
-            </Menu.Target>
-            <Menu.Dropdown>
-              {/* <Menu.Label>Add to row</Menu.Label> */}
-              {gridsWithSpace.length === 0 ? (
-                <Menu.Item disabled>
-                  No rows have enough space ({item.width}mm needed)
-                </Menu.Item>
-              ) : (
-                gridsWithSpace.map((grid) => (
-                  <Menu.Item
-                    key={grid.id}
-                    onClick={() => {
-                      onAddToGrid(grid.id, item);
-                      setMenuOpened(false);
-                    }}>
-                    Add to {grid.title}
-                  </Menu.Item>
-                ))
-              )}
-              <Menu.Divider />
-              <Menu.Item
-                onClick={() => {
-                  setMenuOpened(false);
-                  setPopoverOpened((o) => !o);
-                }}>
-                View Item Details
-              </Menu.Item>
-              <Menu.Divider />
-              <Menu.Item
-                classNames={{ itemLabel: "text-center" }}
-                color="red"
-                onClick={() => {
-                  onRemove(item.id);
-                  setMenuOpened(false);
-                }}>
-                Remove
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        </div>
-      </Popover.Target>
-      <Popover.Dropdown>
-        <Text fw={600} size="sm">
-          {item.text}
-        </Text>
-        <Text size="xs" c="dimmed">
-          Width: {item.width}mm
-        </Text>
-        <Text size="xs" c="dimmed">
-          ID: {item.id}
-        </Text>
-      </Popover.Dropdown>
-    </Popover>
-  );
-}
-
-function AvailableItemsPool({
-  items,
-  onRemove,
-  onAddToGrid,
-  grid1Items,
-  grid2Items,
-  grid3Items,
-  activeBoardSize,
-}: {
-  items: GridItemData[];
-  onRemove: (itemId: string) => void;
-  onAddToGrid: (gridId: string, item: GridItemData) => void;
-  grid1Items: GridItemData[];
-  grid2Items: GridItemData[];
-  grid3Items: GridItemData[];
-  activeBoardSize: BoardType;
-}) {
-  const { isOver, setNodeRef } = useDroppable({
-    id: "available",
-  });
-
-  const style = {
-    backgroundColor: isOver ? "#404040" : undefined,
-    height: "fit-content",
-    maxHeight: "400px",
-    overflow: "auto",
-  };
-
-  const getAvailableGrids = (item: GridItemData) => {
-    const grids = [
-      { id: "grid-1", title: "Back Row", items: grid1Items },
-      { id: "grid-2", title: "Middle Row", items: grid2Items },
-      { id: "grid-3", title: "Front Row", items: grid3Items },
-    ];
-
-    return grids.map((grid) => {
-      const usedWidth = grid.items.reduce((sum, i) => sum + i.width, 0);
-      const remainingWidth = activeBoardSize.grooveWidth - usedWidth;
-      return {
-        id: grid.id,
-        title: grid.title,
-        hasSpace: item.width <= remainingWidth,
-      };
-    });
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex-1 bg-neutral-800 text-white rounded-lg p-3 md:p-4 transition-colors">
-      <h3 className="font-bold mb-2 text-sm md:text-base">Available Items</h3>
-      <p className="text-xs mb-2">
-        Click an item to add it to a row, or drag it directly to a board row.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {items.length === 0 ? (
-          <p className="italic text-xs sm:text-sm">
-            No items yet. Click the "Browse Pieces" button above to find your
-            perfect pieces!
-          </p>
-        ) : (
-          items.map((item) => (
-            <ItemWithContextMenu
-              key={item.id}
-              item={item}
-              onRemove={onRemove}
-              onAddToGrid={onAddToGrid}
-              availableGrids={getAvailableGrids(item)}
-            />
-          ))
-        )}
-      </div>
-    </div>
   );
 }
